@@ -1,0 +1,78 @@
+/**
+ * @fileoverview Estilos de la pestaña «Inicio» (`Tab1Page`).
+ *
+ * @description
+ * Define el banner hero en degradado y la tarjeta elevada de acciones rápidas,
+ * conservando safe-areas e interacciones limpias por debajo del presupuesto CSS.
+ *
+ * @author @ionic-ui-animator (Fase 4 / Fase 5B)
+ * @phase SDD Fase 4 — Diseño Ionic y UX móvil nativa
+ */
+
+// Lienzo teñido global de la aplicación.
+.home-content {
+  --background: var(--ion-background-color);
+}
+
+// Columna centrada con ancho máximo cómodo en móvil y tablet.
+.home-container {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 20px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+// Banner destacado con el degradado de marca.
+.hero-banner {
+  background: var(--app-hero-gradient);
+  color: #ffffff;
+  border-radius: 22px;
+  padding: 24px 20px;
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+// Insignia translúcida sobre el banner.
+.hero-badge {
+  --background: rgba(255, 255, 255, 0.18);
+  --color: #ffffff;
+  margin: 0;
+  font-weight: 600;
+}
+
+// Encabezado principal del banner.
+.hero-heading {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+// Párrafo descriptivo con alta legibilidad sobre el degradado.
+.hero-copy {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+// Tarjeta de botones rápidos.
+.actions-card {
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// Subtítulo de la tarjeta de acciones.
+.actions-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}

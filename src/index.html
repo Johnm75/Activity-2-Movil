@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--
+  @fileoverview Documento HTML raíz de photo-gallery.
+
+  @description
+  Contiene los meta tags que hacen que la app se comporte como nativa en
+  móviles (skill mobile-native): viewport de ancho dispositivo con
+  `viewport-fit=cover` para pintar bajo el notch y leer las safe areas,
+  `theme-color` por esquema de color para que la barra de estado coincida
+  con la cabecera, y zoom habilitado (accesibilidad WCAG 1.4.4: nunca se
+  bloquea con `user-scalable=no`).
+
+  @author @ionic-ui-animator (Fase 4 — Diseño Ionic y UX móvil nativa)
+  @phase SDD Fase 4 — Diseño
+-->
+<html lang="es">
+
+<head>
+  <!-- Codificación UTF-8: obligatoria para los acentos y la eñe de la UI en español. -->
+  <meta charset="utf-8" />
+
+  <!-- Título de la app; aparece en la pestaña del navegador y en el switcher de Android. -->
+  <title>Photo Gallery</title>
+
+  <!-- Base de rutas relativas del router de Angular. -->
+  <base href="/" />
+
+  <!-- Declara soporte de esquema claro y oscuro para que el navegador y el
+       sistema rendericen los controles nativos (scrollbars, inputs) a juego. -->
+  <meta name="color-scheme" content="light dark" />
+
+  <!-- Viewport móvil nativo:
+       - `viewport-fit=cover` extiende la página bajo notch/Dynamic Island y
+         habilita valores reales de `env(safe-area-inset-*)`.
+       - `interactive-widget=resizes-content` hace que el teclado de Android
+         encoja el viewport dinámico, igual que en iOS.
+       - NO se usa `user-scalable=no` ni `maximum-scale=1`: bloquear el zoom
+         es un fallo de accesibilidad (WCAG 1.4.4). -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+
+  <!-- Color de la barra de estado en modo claro: coincide con el fondo del
+       header de Ionic para una transición sin costuras. -->
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+
+  <!-- Color de la barra de estado en modo oscuro: coincide con el fondo oscuro
+       de la paleta `dark.system.css` de Ionic. -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a1a" />
+
+  <!-- Evita que iOS convierta en enlace los números que parecen teléfonos
+       (fechas, contadores) dentro del WebView. -->
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- Desactiva el destello de toque en Windows Phone/Edge legado. -->
+  <meta name="msapplication-tap-highlight" content="no" />
+
+  <!-- Favicon de la aplicación. -->
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+
+  <!-- Metadatos para instalación como app en el home screen (iOS/Android). -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+</head>
+
+<body>
+  <!-- Componente raíz de Angular; `bootstrapApplication` monta aquí la app. -->
+  <app-root></app-root>
+</body>
+
+</html>

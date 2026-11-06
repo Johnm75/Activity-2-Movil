@@ -1,0 +1,160 @@
+/**
+ * @fileoverview Estilos de la pantalla de inicio de sesión (`LoginPage`).
+ *
+ * @description
+ * Construye una composición móvil moderna con franja superior en degradado,
+ * tarjeta elevada con sombra pronunciada, campos `outline` separados y botones
+ * primario/secundario con feedback táctil en `:active` bajo el presupuesto CSS.
+ *
+ * @author @ionic-ui-animator (Fase 4 / 5B / 7)
+ * @phase SDD Fase 5B — Desarrollo de componentes
+ */
+
+// Curva y duración de micro-interacción táctil.
+$ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+$press-duration: 140ms;
+
+// Cabecera decorativa en degradado detrás de la parte superior de la tarjeta.
+.login-backdrop {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 230px;
+  background: var(--app-hero-gradient);
+  border-radius: 0 0 36px 36px;
+  pointer-events: none;
+}
+
+// Contenedor principal centrado a pantalla completa (`100dvh`) con safe-areas.
+.login-wrapper {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 18px
+    calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+// Tarjeta elevada del formulario con ancho óptimo para móvil y tablet.
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// Bloque centrado de logotipo y títulos.
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+// Insignia con degradado y sombra de marca.
+.login-logo-badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-hero-gradient);
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.32);
+  margin-bottom: 4px;
+}
+
+// Icono blanco de cámara dentro de la insignia.
+.login-logo {
+  font-size: 34px;
+  color: #fff;
+}
+
+// Título principal con alto contraste y sin contorno de foco intrusivo.
+.login-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ion-text-color);
+  outline: none;
+}
+
+// Subtítulo secundario bajo el nombre de la app.
+.login-subtitle {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--ion-color-medium);
+}
+
+// Pila vertical de controles del formulario.
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Radio redondeado moderno para cada campo `ion-input` de contorno.
+.login-field {
+  --border-radius: 12px;
+}
+
+// Banner de error global con icono y borde semántico carmesí.
+.login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--ion-color-danger-rgb), 0.35);
+  background: rgba(var(--ion-color-danger-rgb), 0.1);
+  color: var(--ion-color-danger);
+
+  ion-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+}
+
+// Párrafo del mensaje de error.
+.login-error-text {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+// Botones con transición GPU de respuesta inmediata al tacto.
+.submit-button,
+.demo-button {
+  transition: transform $press-duration $ease-out-strong;
+}
+
+// Caja informativa del modo demo separada visualmente del formulario.
+.demo-panel {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--app-surface-muted);
+  border: 1px dashed var(--app-surface-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Leyenda con las credenciales de prueba.
+.demo-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--ion-color-medium);
+}
+
+// Compresión táctil al presionar respetando `prefers-reduced-motion`.
+@media (prefers-reduced-motion: no-preference) {
+  .submit-button:active,
+  .demo-button:active {
+    transform: scale(0.97);
+  }
+}

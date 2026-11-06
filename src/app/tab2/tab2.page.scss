@@ -1,0 +1,147 @@
+/**
+ * @fileoverview Estilos de la galería de fotografías (`Tab2Page`).
+ *
+ * @description
+ * Estiliza la cuadrícula responsiva con marcos elevados, tarjetas de estado con
+ * contraste claro sobre el lienzo, micro-interacción del FAB y soporte completo
+ * de `prefers-reduced-motion` manteniendo el tamaño por debajo del budget CSS.
+ *
+ * @author @ionic-ui-animator (Fase 4 / 5B / 7)
+ * @phase SDD Fase 7 — Animaciones y micro-interacciones
+ */
+
+// Parámetros temporales de aparición y compresión táctil.
+$ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+$photo-enter-duration: 260ms;
+$press-duration: 140ms;
+
+// Contador en la esquina derecha de la barra superior.
+.counter-chip {
+  margin-inline-end: 10px;
+  font-weight: 700;
+}
+
+// Cuadrícula con holgura inferior para librar el FAB y la safe-area.
+.photo-grid {
+  padding: 10px 8px calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+// Marco individual de fotografía con borde sutil, sombra y animación GPU.
+.photo-cell {
+  margin: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--app-surface-bg);
+  border: 2px solid var(--app-surface-bg);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  animation: photo-enter $photo-enter-duration $ease-out-strong both;
+}
+
+// Imagen recortada uniformemente dentro del cuadrado.
+.photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+// Animación de aparición suave desde ligera escala inferior.
+@keyframes photo-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Posición y elevación cromática del botón flotante de cámara.
+.camera-fab {
+  margin-inline-end: 16px;
+  margin-bottom: calc(16px + var(--ion-safe-area-bottom, 0px));
+
+  ion-fab-button {
+    --box-shadow: 0 10px 24px rgba(79, 70, 229, 0.42);
+    transition: transform $press-duration $ease-out-strong;
+  }
+}
+
+// Compresión táctil en dispositivos con animación habilitada.
+@media (prefers-reduced-motion: no-preference) {
+  .camera-fab ion-fab-button:active {
+    transform: scale(0.92);
+  }
+}
+
+// Envoltorio centrado para los estados de carga, error y galería vacía.
+.state-wrapper {
+  min-height: 72dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+// Tarjeta elevada para presentar claramente el estado y su botón de acción.
+.state-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+// Borde reforzado cuando la tarjeta representa un error.
+.error-card {
+  border-color: rgba(var(--ion-color-danger-rgb), 0.4);
+}
+
+// Insignia en degradado para el estado vacío.
+.empty-badge {
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  background: var(--app-hero-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.28);
+}
+
+// Iconos grandes de estado.
+.empty-icon {
+  font-size: 36px;
+  color: #fff;
+}
+
+.state-badge-icon {
+  font-size: 48px;
+}
+
+// Título y descripción del estado vacío.
+.empty-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ion-text-color);
+}
+
+.state-text {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+// Desactiva la transición espacial cuando el sistema solicita reducir movimiento.
+@media (prefers-reduced-motion: reduce) {
+  .photo-cell {
+    animation: none;
+  }
+}

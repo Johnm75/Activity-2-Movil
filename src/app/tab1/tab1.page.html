@@ -1,0 +1,67 @@
+<!--
+  @fileoverview Plantilla de la pestaña «Inicio» (`Tab1Page`).
+
+  @description
+  Sustituye el marcador plano inicial por un panel de bienvenida con tarjeta
+  destacada en degradado, resumen de capacidades nativas y botones claros de
+  navegación hacia «Galería» y «Cuenta», respetando accesibilidad WCAG 2.2 AA.
+
+  @author @ionic-ui-animator (Fase 5B)
+  @phase SDD Fase 5B — Desarrollo de componentes y navegación
+-->
+
+<!-- Barra superior fija con título enfocable programáticamente. -->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title id="tab1-title" tabindex="-1">Inicio</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<!-- Contenido desplazable sobre el lienzo de contraste de la aplicación. -->
+<ion-content [fullscreen]="true" class="home-content">
+
+  <!-- Contenedor centrado de tarjetas del panel de inicio. -->
+  <div class="home-container">
+
+    <!-- Tarjeta hero con degradado de marca y resumen del proyecto híbrido. -->
+    <section class="hero-banner">
+      <ion-chip class="hero-badge">
+        <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+        <ion-label>Sesión JWT Protegida</ion-label>
+      </ion-chip>
+      <h2 class="hero-heading">Tu Galería Móvil Privada</h2>
+      <p class="hero-copy">
+        Captura fotografías con la cámara del dispositivo y consérvalas de forma
+        segura en el almacenamiento local incluso sin conexión a internet.
+      </p>
+    </section>
+
+    <!-- Tarjeta elevada con botones de acción principal e secundaria claramente visibles. -->
+    <section class="actions-card app-surface-card" aria-label="Acciones rápidas">
+      <h3 class="actions-title">¿Qué deseas hacer ahora?</h3>
+
+      <!-- Acción primaria sólida: ir directamente a la cuadrícula y cámara. -->
+      <ion-button
+        expand="block"
+        fill="solid"
+        color="primary"
+        [strong]="true"
+        routerLink="/tabs/tab2">
+        <ion-icon name="images-outline" slot="start" aria-hidden="true"></ion-icon>
+        Abrir mi galería y cámara
+      </ion-button>
+
+      <!-- Acción secundaria delineada: revisar estado del token y perfil. -->
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="primary"
+        routerLink="/tabs/tab3">
+        <ion-icon name="person-circle-outline" slot="start" aria-hidden="true"></ion-icon>
+        Ver estado de mi cuenta
+      </ion-button>
+    </section>
+
+  </div>
+
+</ion-content>

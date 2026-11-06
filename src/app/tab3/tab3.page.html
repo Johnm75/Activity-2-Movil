@@ -1,0 +1,96 @@
+<!--
+  @fileoverview Plantilla de la página «Cuenta» (`Tab3Page`).
+
+  @description
+  Muestra la sesión activa dentro de tarjetas elevadas claramente separadas del
+  fondo, el token JWT enmascarado (`SEC-007`) y un botón destructivo sólido de
+  alto contraste «Cerrar sesión» conectado a un diálogo de confirmación `ion-alert`.
+
+  @author @ionic-ui-animator (Fase 5B — Desarrollo UI)
+  @phase SDD Fase 5B — Desarrollo de componentes y navegación
+-->
+
+<!-- Cabecera fija con título enfocable por lectores de pantalla. -->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title id="account-title" tabindex="-1">Cuenta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<!-- Lienzo desplazable de la vista de cuenta. -->
+<ion-content [fullscreen]="true" class="account-content">
+
+  <!-- Título grande colapsable en iOS. -->
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Cuenta</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div class="account-wrapper">
+    @if (session(); as sessionValue) {
+
+      <!-- Tarjeta elevada de identidad del estudiante autenticado. -->
+      <section class="profile-card app-surface-card">
+        <ion-avatar class="profile-avatar" aria-hidden="true">
+          <ion-icon name="person"></ion-icon>
+        </ion-avatar>
+
+        <h2 class="profile-name">{{ sessionValue.user.name }}</h2>
+        <p class="profile-email">{{ sessionValue.user.email }}</p>
+
+        <ion-chip color="primary" class="profile-role">
+          <ion-label>Estudiante</ion-label>
+        </ion-chip>
+      </section>
+
+      <!-- Tarjeta con metadatos técnicos no sensibles de la sesión activa. -->
+      <ion-list inset="true" class="session-list app-surface-card" aria-label="Detalles de la sesión">
+        <ion-item lines="full">
+          <ion-icon name="key-outline" color="primary" slot="start" aria-hidden="true"></ion-icon>
+          <ion-label>Token JWT</ion-label>
+          <ion-note slot="end" class="mono-note">{{ tokenPreview() }}</ion-note>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="time-outline" color="secondary" slot="start" aria-hidden="true"></ion-icon>
+          <ion-label>Vigencia restante</ion-label>
+          <ion-note slot="end">
+            {{ expiresInMinutes() !== null ? (expiresInMinutes() + ' min restantes') : 'sin datos' }}
+          </ion-note>
+        </ion-item>
+      </ion-list>
+
+      <!-- Botón sólido carmesí claramente identificable para cerrar sesión. -->
+      <div class="logout-area">
+        <ion-button
+          id="logout-trigger"
+          class="logout-button"
+          expand="block"
+          fill="solid"
+          color="danger"
+          [strong]="true">
+          <ion-icon name="log-out-outline" slot="start" aria-hidden="true"></ion-icon>
+          Cerrar sesión en este dispositivo
+        </ion-button>
+      </div>
+
+      <!-- Diálogo accesible de confirmación antes de borrar el token local. -->
+      <ion-alert
+        trigger="logout-trigger"
+        header="¿Cerrar sesión?"
+        message="Se eliminará el token de este dispositivo. Tus fotografías guardadas se conservarán."
+        [buttons]="alertButtons">
+      </ion-alert>
+
+    } @else {
+
+      <!-- Estado defensivo cuando no existe sesión activa. -->
+      <div class="no-session app-surface-card" role="status">
+        <p class="no-session-text">No hay una sesión activa en este dispositivo.</p>
+      </div>
+
+    }
+  </div>
+
+</ion-content>

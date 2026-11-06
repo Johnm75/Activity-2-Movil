@@ -1,0 +1,130 @@
+<!--
+  @fileoverview Plantilla de la galería de fotografías (`Tab2Page`).
+
+  @description
+  Estructura Ionic con cabecera fija, contador accesible, estados diferenciados
+  en tarjetas elevadas (carga, error con reintento, galería vacía con botón CTA
+  central además del FAB flotante) y cuadrícula responsiva con animación GPU.
+
+  @author @ionic-ui-animator (Fase 4 / 5B / 7)
+  @phase SDD Fase 5B — Desarrollo de componentes y navegación
+-->
+
+<!-- Cabecera superior con título enfocable y contador de fotografías. -->
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title id="gallery-title" tabindex="-1">Galería</ion-title>
+
+    @if (photoCount() > 0) {
+      <!-- Chip contador con etiqueta completa para lectores TalkBack/VoiceOver. -->
+      <ion-chip
+        slot="end"
+        class="counter-chip"
+        color="primary"
+        [attr.aria-label]="photoCount() + ' fotografías en la galería'">
+        <ion-icon name="images" aria-hidden="true"></ion-icon>
+        <ion-label>{{ photoCount() }}</ion-label>
+      </ion-chip>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<!-- Lienzo desplazable de la galería. -->
+<ion-content [fullscreen]="true" class="gallery-content">
+
+  <!-- Título grande colapsable en modo Cupertino (iOS). -->
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Galería</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- ESTADO 1 — CARGANDO -->
+  @if (loading()) {
+    <div class="state-wrapper" role="status" aria-live="polite">
+      <div class="state-card app-surface-card">
+        <ion-spinner name="crescent" color="primary" aria-hidden="true"></ion-spinner>
+        <p class="state-text">Cargando tu galería…</p>
+      </div>
+    </div>
+  }
+
+  <!-- ESTADO 2 — ERROR DE LECTURA O PERMISOS -->
+  @if (!loading() && errorMessage(); as message) {
+    <div class="state-wrapper" role="alert">
+      <div class="state-card error-card app-surface-card">
+        <ion-icon name="alert-circle" color="danger" class="state-badge-icon" aria-hidden="true"></ion-icon>
+        <p class="state-text">{{ message }}</p>
+        <ion-button fill="solid" color="danger" (click)="retryLoad()">
+          Reintentar carga
+        </ion-button>
+      </div>
+    </div>
+  }
+
+  <!-- ESTADO 3 — GALERÍA VACÍA CON BOTÓN PRIMARIO VISIBLE -->
+  @if (!loading() && !errorMessage() && isEmpty()) {
+    <div class="state-wrapper" aria-live="polite">
+      <div class="state-card app-surface-card">
+        <div class="empty-badge" aria-hidden="true">
+          <ion-icon name="images" class="empty-icon"></ion-icon>
+        </div>
+        <h2 class="empty-title">Tu galería está vacía</h2>
+        <p class="state-text">
+          Captura tu primera fotografía con la cámara del dispositivo o selecciónala desde tu equipo.
+        </p>
+        <!-- Botón primario explícito además del FAB para dejar evidente la acción principal. -->
+        <ion-button
+          fill="solid"
+          color="primary"
+          [strong]="true"
+          (click)="takePhoto()">
+          <ion-icon name="camera" slot="start" aria-hidden="true"></ion-icon>
+          Tomar primera fotografía
+        </ion-button>
+      </div>
+    </div>
+  }
+
+  <!-- ESTADO 4 — CUADRÍCULA DE FOTOGRAFÍAS -->
+  @if (!loading() && !isEmpty()) {
+    <ion-grid class="photo-grid" [fixed]="true">
+      <ion-row>
+        @for (photo of photos(); track photo.id) {
+          <ion-col size="4" sizeMd="3" sizeLg="2">
+            <figure
+              class="photo-cell"
+              [style.animation-delay.ms]="staggerDelay($index)">
+              <ion-img
+                class="photo-img"
+                [src]="photo.webviewPath"
+                [alt]="'Fotografía ' + ($index + 1) + ' de ' + photoCount() + ', capturada el ' + formatDate(photo.capturedAt)">
+              </ion-img>
+            </figure>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+  }
+
+  <!-- BOTÓN FLOTANTE DE CÁMARA (FAB) -->
+  <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="camera-fab">
+    <ion-fab-button
+      color="primary"
+      (click)="takePhoto()"
+      [disabled]="loading()"
+      aria-label="Tomar una fotografía y añadirla a la galería">
+      <ion-icon name="camera" aria-hidden="true"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <!-- NOTIFICACIÓN TOAST DE CONFIRMACIÓN -->
+  <ion-toast
+    [isOpen]="toastOpen()"
+    [message]="toastMessage()"
+    [duration]="2500"
+    position="bottom"
+    (didDismiss)="dismissToast()">
+  </ion-toast>
+
+</ion-content>
