@@ -1,13 +1,6 @@
 /**
- * @fileoverview Estilos del contenedor de navegación por pestañas (`TabsPage`).
+ * Estilos de barra de pestañas gestionados desde `src/global.scss`.
  *
- * @description
- * `<ion-tab-bar>` gestiona de forma nativa la safe-area inferior (`env(safe-area-inset-bottom)`)
- * y la adaptación visual entre Material Design 3 (Android) y Cupertino (iOS),
- * mientras que `global.scss` aplica `touch-action: manipulation` y `user-select: none`
- * sobre `ion-tab-button`.
- *
- * @author @ionic-ui-animator (Fase 4)
- * @author @quality-security-auditor (Fase 6 — auditoría de comentarios)
- * @phase SDD Fase 4 — Diseño Ionic y UX móvil nativa
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */

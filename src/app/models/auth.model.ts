@@ -1,88 +1,41 @@
 /**
- * @fileoverview Modelos de dominio para autenticación JWT.
+ * Contratos de dominio para autenticación de usuarios y ciclo de vida del token JWT.
  *
- * @description
- * Define las interfaces y tipos de error usados por `AuthJwtService`,
- * `TokenStorageService` y el interceptor JWT. Mantener los modelos separados
- * facilita los tests y evita dependencias circulares entre servicios.
- *
- * @author @capacitor-architect (Fase 3)
- * @phase SDD Fase 3 — Arquitectura Capacitor
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-/**
- * Credenciales enviadas en el cuerpo de `POST /auth/login`.
- *
- * No se persiste la contraseña en ningún momento (SEC-008).
- */
 export interface LoginCredentials {
-  // Correo electrónico del estudiante.
   email: string;
-
-  // Contraseña en texto plano; solo vive durante la petición.
   password: string;
 }
 
-/**
- * Perfil mínimo del usuario devuelto por la API.
- *
- * No incluye datos sensibles ni credenciales.
- */
-export interface UserProfile {
-  // Identificador único del usuario.
+export interface AuthenticatedUserProfile {
   id: string;
-
-  // Nombre completo o de visualización.
-  name: string;
-
-  // Correo electrónico del usuario.
+  fullName: string;
   email: string;
-
-  // Rol único del dominio académico (CON-005).
   role: 'student';
 }
 
-/**
- * Respuesta esperada del endpoint `POST /auth/login`.
- */
-export interface LoginResponse {
-  // Token JWT en formato compacto.
+export interface LoginApiResponse {
   token: string;
-
-  // Tipo de token; siempre Bearer en este dominio.
   tokenType: 'Bearer';
-
-  // Tiempo de vida en segundos.
-  expiresIn: number;
-
-  // Perfil del usuario autenticado.
-  user: UserProfile;
+  expiresInSeconds: number;
+  user: AuthenticatedUserProfile;
 }
 
 /**
- * Sesión normalizada que vive en memoria como signal de Angular.
- *
- * `expiresAt` se almacena como epoch en milisegundos para comparaciones rápidas.
+ * Sesión normalizada en memoria; `expiresAtTimestampMs` usa milisegundos epoch
+ * para comparaciones directas contra `Date.now()`.
  */
-export interface AuthSession {
-  // Token JWT vigente.
-  token: string;
-
-  // Momento de expiración en milisegundos desde epoch.
-  expiresAt: number;
-
-  // Perfil del usuario autenticado.
-  user: UserProfile;
+export interface AuthenticatedSession {
+  accessToken: string;
+  expiresAtTimestampMs: number;
+  userProfile: AuthenticatedUserProfile;
 }
 
-/**
- * Códigos estables de error de autenticación.
- *
- * La UI traduce estos códigos a mensajes en español en un único mapa (GUD-005),
- * evitando dispersar literales de texto por los servicios.
- */
-export type AuthErrorCode =
-  | 'invalid_credentials'   // Credenciales incorrectas (401).
-  | 'network_error'         // Fallo de red o servidor no disponible.
-  | 'token_expired'         // Token vencido localmente.
-  | 'unexpected_error';     // Cualquier otro error no clasificado.
+export type AuthenticationErrorCode =
+  | 'invalid_credentials'
+  | 'network_error'
+  | 'token_expired'
+  | 'unexpected_error';

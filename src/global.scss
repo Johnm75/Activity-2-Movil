@@ -1,78 +1,49 @@
 /*
- * @fileoverview Hoja de estilos global y sistema visual base de `photo-gallery`.
- *
- * @description
- * Importa las hojas estructurales de Ionic 9, activa la paleta oscura del
- * sistema operativo y establece dos pilares transversales:
- * 1. Correcciones `mobile-native`: fin del tap-highlight, alturas `100dvh`,
- *    bloqueo de overscroll, `touch-action: manipulation` e inputs ≥ 16 px.
- * 2. Claridad visual de controles interactivos: bordes nítidos, sombras de
- *    elevación y siluetas inequívocas en `ion-button`, `ion-input`,
- *    `ion-toolbar` e `ion-tab-bar` para que cada botón se distinga claramente.
- *
- * @author @ionic-ui-animator (Fase 4 — Diseño Ionic y UX móvil nativa)
- * @phase SDD Fase 4 — Diseño
+ * Estilos globales de adaptación móvil nativa y jerarquía visual de controles Ionic.
+ * Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
  */
 
-/* CSS núcleo obligatorio para hidratar y posicionar los Web Components de Ionic. */
 @import "@ionic/angular/css/core.css";
-
-/* Normalización tipográfica y estructural base para aplicaciones Ionic. */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
-
-/* Utilidades opcionales de espaciado, alineación y distribución flexbox. */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
-
-/* Sincronización automática con el modo oscuro del sistema operativo. */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
-/* ═════════════════════════════════════════════════════════════════════════
-   1. BASE MÓVIL NATIVA (skill `mobile-native`)
-   ═════════════════════════════════════════════════════════════════════════ */
-
 html {
-  /* Suprime el destello rectangular por defecto de WebViews móviles al tocar. */
   -webkit-tap-highlight-color: transparent;
-  /* Evita inflado involuntario de fuentes al rotar el teléfono. */
   -webkit-text-size-adjust: 100%;
-  /* Impide que el arrastre vertical dispare recarga accidental del documento. */
   overscroll-behavior: none;
 }
 
 body {
-  /* Mantiene el rebote confinado al interior de `ion-content`. */
   overscroll-behavior: none;
-  /* Tipografía limpia de sistema en Android (Roboto) e iOS (SF Pro). */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 ion-app {
-  /* Usa `100dvh` para ajustarse al alto real visible con teclado o barras del sistema. */
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--ion-background-color);
 }
 
-/* Garantiza que todas las vistas hereden el lienzo teñido que contrasta con las tarjetas. */
 ion-content {
   --background: var(--ion-background-color);
 }
 
-/* Evita zoom forzado en Safari iOS manteniendo al menos 16 px en entradas nativas. */
+/* Previene el auto-zoom en Safari iOS manteniendo entradas de texto en al menos 16 px. */
 input,
 textarea,
 select {
   font-size: 16px;
 }
 
-/* Elimina retardo táctil de 300 ms e impide selección accidental de texto en botones. */
+/* Suprime el retardo táctil y evita selección accidental de texto al mantener presionado un botón. */
 button,
 a,
 [role="button"],
@@ -86,11 +57,6 @@ ion-chip {
   -webkit-touch-callout: none;
 }
 
-/* ═════════════════════════════════════════════════════════════════════════
-   2. SISTEMA DE CONTROLES VISIBLES Y JERARQUÍA DE SUPERFICIES
-   ═════════════════════════════════════════════════════════════════════════ */
-
-/* Todos los botones Ionic presentan forma redondeada moderna, peso legible y altura táctil ≥ 48 px. */
 ion-button {
   --border-radius: 14px;
   --padding-top: 13px;
@@ -104,30 +70,25 @@ ion-button {
   min-height: 48px;
 }
 
-/* Los botones sólidos llevan sombra cromática para percibirse claramente clicables. */
 ion-button:not([fill="outline"]):not([fill="clear"]) {
   --box-shadow: var(--app-btn-shadow);
 }
 
-/* Los botones `outline` muestran borde de 1.5 px y fondo sutil para nunca confundirse con texto plano. */
 ion-button[fill="outline"] {
   --border-width: 1.5px;
   --background: rgba(var(--ion-color-primary-rgb), 0.06);
 }
 
-/* Barra superior con línea divisoria nítida respecto al lienzo de contenido. */
 ion-header ion-toolbar {
   --border-width: 0 0 1px 0;
   --border-color: var(--app-surface-border);
 }
 
-/* Título principal con mayor presencia tipográfica. */
 ion-toolbar ion-title {
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
-/* Barra inferior de pestañas elevada con borde superior claro y etiquetas marcadas. */
 ion-tab-bar {
   border-top: 1px solid var(--app-surface-border);
   box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
@@ -135,12 +96,10 @@ ion-tab-bar {
   min-height: 60px;
 }
 
-/* Pestaña activa con peso seminegrita para reforzar orientación del usuario. */
 ion-tab-button.tab-selected {
   font-weight: 700;
 }
 
-/* Tarjeta elevada reutilizable por Login, Inicio, Galería vacía y Cuenta. */
 .app-surface-card {
   background: var(--app-surface-bg);
   border: 1px solid var(--app-surface-border);

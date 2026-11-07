@@ -1,23 +1,13 @@
 /**
- * @fileoverview Estilos de la página «Cuenta» (`Tab3Page`).
+ * Estilos de la pestaña «Cuenta» (`Tab3Page`).
  *
- * @description
- * Presenta la identidad del usuario y los metadatos JWT sobre tarjetas elevadas
- * y destaca la acción «Cerrar sesión» con un botón carmesí sólido y sombra propia.
- *
- * @author @ionic-ui-animator (Fase 4 / 5B / 7)
- * @phase SDD Fase 5B — Desarrollo de componentes
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
 $ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
 $press-duration: 140ms;
 
-// Lienzo teñido de fondo.
-.account-content {
-  --background: var(--ion-background-color);
-}
-
-// Columna centrada adaptable con safe-area inferior.
 .account-wrapper {
   max-width: 480px;
   margin: 0 auto;
@@ -27,7 +17,6 @@ $press-duration: 140ms;
   gap: 16px;
 }
 
-// Tarjeta superior del perfil del usuario.
 .profile-card {
   padding: 26px 20px 22px;
   display: flex;
@@ -37,12 +26,11 @@ $press-duration: 140ms;
   text-align: center;
 }
 
-// Avatar circular con el degradado principal de marca.
 .profile-avatar {
   width: 84px;
   height: 84px;
   margin-bottom: 6px;
-  color: #ffffff;
+  color: #fff;
   background: var(--app-hero-gradient);
   box-shadow: 0 10px 22px rgba(79, 70, 229, 0.28);
   display: flex;
@@ -54,7 +42,6 @@ $press-duration: 140ms;
   }
 }
 
-// Nombre del estudiante.
 .profile-name {
   margin: 0;
   font-size: 1.35rem;
@@ -62,32 +49,27 @@ $press-duration: 140ms;
   color: var(--ion-text-color);
 }
 
-// Correo electrónico secundario.
 .profile-email {
   margin: 0;
   font-size: 0.94rem;
   color: var(--ion-color-medium);
 }
 
-// Chip de rol.
 .profile-role {
   margin-top: 6px;
   font-weight: 600;
 }
 
-// Lista técnica ajustada al borde redondeado de tarjeta.
 .session-list {
   margin: 0;
   overflow: hidden;
 }
 
-// Tipografía monoespaciada para la vista previa del token.
 .mono-note {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.82rem;
 }
 
-// Contenedor y sombra dedicada del botón destructivo sólido.
 .logout-area {
   padding-top: 4px;
 }
@@ -103,7 +85,6 @@ $press-duration: 140ms;
   }
 }
 
-// Tarjeta de estado defensivo sin sesión.
 .no-session {
   padding: 32px 20px;
   text-align: center;

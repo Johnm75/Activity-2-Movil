@@ -1,33 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  @fileoverview Manifiesto nativo Android de la aplicación `Galería de Fotos` (`com.example.photo.gallery`).
-
-  @description
-  Declara los componentes nativos del puente Capacitor (`MainActivity` y el
-  `FileProvider` seguro para compartir URIs temporales de cámara con el WebView)
-  y establece el principio de mínimo privilegio en los permisos de Android:
-  - `INTERNET`: necesario para el WebView local (`https://localhost`) y consumo de API REST HTTPS.
-  - `CAMERA`: requerido opcionalmente cuando el dispositivo dispone de hardware de cámara
-    para que `@capacitor/camera` solicite permiso en tiempo de ejecución.
-  - `READ_MEDIA_IMAGES`: permiso granular de lectura de imágenes en Android 13+ (API 33+).
-  - `READ_EXTERNAL_STORAGE` (acotado hasta API 32): compatibilidad con selector de fotos en Android 6–12L.
-  - `WRITE_EXTERNAL_STORAGE` (acotado hasta API 32): compatibilidad legada de escritura externa sin
-    ampliar superficie en Android 13+, ya que la galería guarda en almacenamiento privado (`Directory.Data`).
-  - `android:allowBackup="false"` evita respaldos automáticos no cifrados en la nube de tokens
-    o fotografías privadas almacenadas en `SharedPreferences` / `files/` (mitigación TM-001 / SEC-001).
-
-  @author @capacitor-release-ops (Fase 8)
-  @author @quality-security-auditor (Fase 6 — mínimo privilegio y comentarios en español)
-  @phase SDD Fase 8 — Migración Nativa Android/iOS, Pruebas en Emulador y Release
+  Manifiesto nativo Android de Galería de Fotos (com.example.photo.gallery).
+  Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Declara que la cámara física es opcional para no excluir emuladores o tablets sin cámara trasera en Google Play. -->
+    <!-- Cámara declarada como opcional para permitir instalación en emuladores o tablets sin sensor trasero. -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <!-- Configuración global de la aplicación Android; `allowBackup="false"` protege sesión JWT y fotos privadas. -->
+    <!-- allowBackup="false" evita respaldos no cifrados de tokens JWT y fotografías privadas del sandbox. -->
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
@@ -36,7 +19,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <!-- Actividad anfitriona de Capacitor que aloja el Android System WebView a pantalla completa. -->
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
             android:name=".MainActivity"
@@ -44,48 +26,30 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true">
-
-            <!-- Filtro de intención principal que expone el icono de la app en el lanzador de Android. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
-        <!-- Proveedor seguro de archivos (`content://`) requerido por `@capacitor/camera` y `@capacitor/filesystem`.
-             `exported="false"` impide el acceso directo desde otras apps salvo concesión explícita temporal (`grantUriPermissions="true"`). -->
+        <!-- Proveedor privado para compartir URIs temporales de captura con el plugin nativo de cámara. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <!-- Rutas autorizadas para compartir descriptores temporales definidas en `res/xml/file_paths.xml`. -->
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════
-         PERMISOS DEL SISTEMA ANDROID (Principio de Mínimo Privilegio)
-         ═══════════════════════════════════════════════════════════════════════ -->
-
-    <!-- Acceso de red requerido para peticiones API REST sobre HTTPS y recursos del puente Capacitor. -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Permiso en tiempo de ejecución para capturar fotografías con `@capacitor/camera`. -->
     <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- Permiso granular de Android 13+ (API 33+) para seleccionar imágenes existentes de la biblioteca multimedia. -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- Permiso legado de lectura de almacenamiento externo acotado hasta Android 12L (API 32). -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-
-    <!-- Permiso legado de escritura en almacenamiento externo acotado hasta Android 12L (API 32). -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />

@@ -1,20 +1,10 @@
 /**
- * @fileoverview Estilos de la pestaña «Inicio» (`Tab1Page`).
+ * Estilos de la pestaña «Inicio» (`Tab1Page`).
  *
- * @description
- * Define el banner hero en degradado y la tarjeta elevada de acciones rápidas,
- * conservando safe-areas e interacciones limpias por debajo del presupuesto CSS.
- *
- * @author @ionic-ui-animator (Fase 4 / Fase 5B)
- * @phase SDD Fase 4 — Diseño Ionic y UX móvil nativa
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-// Lienzo teñido global de la aplicación.
-.home-content {
-  --background: var(--ion-background-color);
-}
-
-// Columna centrada con ancho máximo cómodo en móvil y tablet.
 .home-container {
   max-width: 540px;
   margin: 0 auto;
@@ -24,10 +14,9 @@
   gap: 18px;
 }
 
-// Banner destacado con el degradado de marca.
 .hero-banner {
   background: var(--app-hero-gradient);
-  color: #ffffff;
+  color: #fff;
   border-radius: 22px;
   padding: 24px 20px;
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.25);
@@ -37,15 +26,13 @@
   gap: 10px;
 }
 
-// Insignia translúcida sobre el banner.
 .hero-badge {
   --background: rgba(255, 255, 255, 0.18);
-  --color: #ffffff;
+  --color: #fff;
   margin: 0;
   font-weight: 600;
 }
 
-// Encabezado principal del banner.
 .hero-heading {
   margin: 0;
   font-size: 1.45rem;
@@ -53,26 +40,68 @@
   letter-spacing: -0.02em;
 }
 
-// Párrafo descriptivo con alta legibilidad sobre el degradado.
 .hero-copy {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   line-height: 1.5;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.94);
 }
 
-// Tarjeta de botones rápidos.
-.actions-card {
+.actions-card,
+.api-card {
   padding: 20px 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-// Subtítulo de la tarjeta de acciones.
-.actions-title {
-  margin: 0 0 4px;
+.section-title {
+  margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--ion-text-color);
+}
+
+.api-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.api-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+}
+
+.api-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.api-error {
+  margin: 0;
+  color: var(--ion-color-danger);
+  font-size: 0.9rem;
+}
+
+.api-list {
+  padding: 0;
+  background: transparent;
+}
+
+.api-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+.api-thumb {
+  --border-radius: 12px;
+  width: 48px;
+  height: 48px;
 }
