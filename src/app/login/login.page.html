@@ -1,50 +1,27 @@
 <!--
-  @fileoverview Plantilla de la pantalla de inicio de sesión (`LoginPage`).
-
-  @description
-  Presenta una tarjeta elevada de alto contraste sobre el lienzo teñido de la
-  aplicación, con cabecera degradada de marca, controles `ion-input` en modo
-  `outline` (sintaxis moderna Ionic 9 sin `autocorrect="off"`), selector para
-  mostrar/ocultar contraseña, botón primario sólido «Iniciar sesión» claramente
-  diferenciado y botón secundario para autocompletar la cuenta de demostración.
-
-  @author @ionic-ui-animator (Fase 5B — Desarrollo UI)
-  @phase SDD Fase 5B — Desarrollo de componentes y navegación
+  Vista de autenticación de usuarios mediante JWT.
+  Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
 -->
-
-<!-- Lienzo principal desplazable a pantalla completa con fondo de contraste. -->
 <ion-content [fullscreen]="true" class="login-content">
-
-  <!-- Franja decorativa superior con degradado de marca para dar profundidad visual. -->
   <div class="login-backdrop" aria-hidden="true"></div>
 
-  <!-- Contenedor centrado adaptable a móvil y tablet respetando safe-areas. -->
   <div class="login-wrapper">
-
-    <!-- Tarjeta principal elevada que agrupa identidad visual, formulario y ayuda demo. -->
     <section class="login-card app-surface-card">
-
-      <!-- Cabecera de marca: insignia de cámara, título enfocable y subtítulo guía. -->
       <header class="login-header">
-        <!-- Insignia circular con degradado e icono decorativo excluido de lectores. -->
         <div class="login-logo-badge" aria-hidden="true">
           <ion-icon name="camera" class="login-logo"></ion-icon>
         </div>
-        <!-- Encabezado principal enfocable por `announceScreen` al entrar en la ruta. -->
         <h1 id="login-title" tabindex="-1" class="login-title">Galería de Fotos</h1>
-        <!-- Subtítulo explicativo con contraste legible. -->
         <p class="login-subtitle">Accede a tu espacio privado de capturas</p>
       </header>
 
-      <!-- Formulario reactivo conectado a `onSubmit()` al pulsar Enter o el botón principal. -->
       <form
         class="login-form"
-        [formGroup]="form"
-        (ngSubmit)="onSubmit()"
+        [formGroup]="credentialsForm"
+        (ngSubmit)="submitLoginForm()"
         novalidate
         aria-labelledby="login-title">
 
-        <!-- Campo de correo electrónico con etiqueta apilada siempre visible y borde nítido. -->
         <ion-input
           class="login-field"
           formControlName="email"
@@ -57,11 +34,10 @@
           autocomplete="email"
           autocapitalize="none"
           enterkeyhint="next"
-          [errorText]="fieldError('email')"
+          [errorText]="getFieldValidationMessage('email')"
           helperText="Ingresa tu correo institucional o de prueba.">
         </ion-input>
 
-        <!-- Campo de contraseña con botón integrado para alternar visibilidad. -->
         <ion-input
           class="login-field"
           formControlName="password"
@@ -72,21 +48,18 @@
           type="password"
           autocomplete="current-password"
           enterkeyhint="done"
-          [errorText]="fieldError('password')"
+          [errorText]="getFieldValidationMessage('password')"
           helperText="Mínimo 8 caracteres.">
-          <!-- Acción nativa de Ionic 9 para mostrar u ocultar la contraseña escrita. -->
           <ion-input-password-toggle slot="end"></ion-input-password-toggle>
         </ion-input>
 
-        <!-- Alerta accesible ante credenciales erróneas o problemas de conexión. -->
-        @if (errorMessage(); as message) {
+        @if (authenticationErrorMessage(); as errorMessage) {
           <div class="login-error" role="alert" aria-live="assertive">
             <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
-            <p class="login-error-text">{{ message }}</p>
+            <p class="login-error-text">{{ errorMessage }}</p>
           </div>
         }
 
-        <!-- Botón primario sólido de alto contraste para enviar el formulario de acceso. -->
         <ion-button
           class="submit-button"
           expand="block"
@@ -94,10 +67,9 @@
           color="primary"
           [strong]="true"
           type="submit"
-          [disabled]="loading()"
+          [disabled]="isSubmittingCredentials()"
           aria-label="Iniciar sesión">
-          @if (loading()) {
-            <!-- Spinner visible mientras se valida y persiste el token JWT. -->
+          @if (isSubmittingCredentials()) {
             <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
           } @else {
             <ion-icon name="log-in-outline" slot="start" aria-hidden="true"></ion-icon>
@@ -105,12 +77,11 @@
           }
         </ion-button>
 
-        <!-- Panel de demostración con botón secundario claro para cargar las credenciales en un toque. -->
-        @if (showDemoHint) {
+        @if (isDemoModeEnabled) {
           <div class="demo-panel" aria-live="polite">
             <p class="demo-hint">
-              Cuenta demo: <strong>{{ demoCredentials.email }}</strong> ·
-              <strong>{{ demoCredentials.password }}</strong>
+              Cuenta demo: <strong>{{ demoAccountCredentials.email }}</strong> ·
+              <strong>{{ demoAccountCredentials.password }}</strong>
             </p>
             <ion-button
               class="demo-button"
@@ -118,16 +89,13 @@
               fill="outline"
               color="secondary"
               type="button"
-              (click)="fillDemoCredentials()">
+              (click)="populateDemoCredentials()">
               <ion-icon name="sparkles-outline" slot="start" aria-hidden="true"></ion-icon>
               Usar credenciales de prueba
             </ion-button>
           </div>
         }
       </form>
-
     </section>
-
   </div>
-
 </ion-content>

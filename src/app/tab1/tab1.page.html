@@ -1,46 +1,30 @@
 <!--
-  @fileoverview Plantilla de la pestaña «Inicio» (`Tab1Page`).
-
-  @description
-  Sustituye el marcador plano inicial por un panel de bienvenida con tarjeta
-  destacada en degradado, resumen de capacidades nativas y botones claros de
-  navegación hacia «Galería» y «Cuenta», respetando accesibilidad WCAG 2.2 AA.
-
-  @author @ionic-ui-animator (Fase 5B)
-  @phase SDD Fase 5B — Desarrollo de componentes y navegación
+  Vista «Inicio» (`Tab1Page`): resumen de persistencia local y consumo API REST con Bearer JWT.
+  Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
 -->
-
-<!-- Barra superior fija con título enfocable programáticamente. -->
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title id="tab1-title" tabindex="-1">Inicio</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<!-- Contenido desplazable sobre el lienzo de contraste de la aplicación. -->
-<ion-content [fullscreen]="true" class="home-content">
-
-  <!-- Contenedor centrado de tarjetas del panel de inicio. -->
+<ion-content [fullscreen]="true">
   <div class="home-container">
-
-    <!-- Tarjeta hero con degradado de marca y resumen del proyecto híbrido. -->
     <section class="hero-banner">
       <ion-chip class="hero-badge">
         <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
-        <ion-label>Sesión JWT Protegida</ion-label>
+        <ion-label>Sesión JWT activa · {{ savedPhotosCount() }} fotos locales</ion-label>
       </ion-chip>
       <h2 class="hero-heading">Tu Galería Móvil Privada</h2>
       <p class="hero-copy">
-        Captura fotografías con la cámara del dispositivo y consérvalas de forma
-        segura en el almacenamiento local incluso sin conexión a internet.
+        Captura fotografías con la cámara del dispositivo, persístelas localmente en
+        <code>Directory.Data</code> y sincroniza recursos protegidos mediante Token JWT.
       </p>
     </section>
 
-    <!-- Tarjeta elevada con botones de acción principal e secundaria claramente visibles. -->
     <section class="actions-card app-surface-card" aria-label="Acciones rápidas">
-      <h3 class="actions-title">¿Qué deseas hacer ahora?</h3>
+      <h3 class="section-title">Navegación rápida</h3>
 
-      <!-- Acción primaria sólida: ir directamente a la cuadrícula y cámara. -->
       <ion-button
         expand="block"
         fill="solid"
@@ -51,17 +35,59 @@
         Abrir mi galería y cámara
       </ion-button>
 
-      <!-- Acción secundaria delineada: revisar estado del token y perfil. -->
       <ion-button
         expand="block"
         fill="outline"
         color="primary"
         routerLink="/tabs/tab3">
         <ion-icon name="person-circle-outline" slot="start" aria-hidden="true"></ion-icon>
-        Ver estado de mi cuenta
+        Ver estado de mi cuenta JWT
       </ion-button>
     </section>
 
-  </div>
+    <section class="api-card app-surface-card" aria-label="Catálogo remoto API REST">
+      <div class="api-header">
+        <div>
+          <h3 class="section-title">Servicio API REST Protegido</h3>
+          <p class="api-subtitle">
+            <code>GET /v1/photos</code> · Bearer {{ maskedTokenPreview() || 'validado' }}
+          </p>
+        </div>
 
+        <ion-button
+          fill="outline"
+          size="small"
+          color="secondary"
+          [disabled]="isLoadingRemoteCatalog()"
+          (click)="synchronizeRemoteCatalog()">
+          <ion-icon name="refresh-outline" slot="start" aria-hidden="true"></ion-icon>
+          Sincronizar
+        </ion-button>
+      </div>
+
+      @if (isLoadingRemoteCatalog()) {
+        <div class="api-state" role="status" aria-live="polite">
+          <ion-spinner name="crescent" color="secondary" aria-hidden="true"></ion-spinner>
+          <span>Consultando API REST con cabecera Authorization…</span>
+        </div>
+      } @else if (remoteCatalogErrorMessage(); as errorText) {
+        <p class="api-error" role="alert">{{ errorText }}</p>
+      } @else {
+        <ion-list lines="full" class="api-list">
+          @for (item of remoteCatalogPhotos(); track item.id) {
+            <ion-item class="api-item">
+              <ion-thumbnail slot="start" class="api-thumb">
+                <img [src]="item.thumbnailUrl" [alt]="item.title" loading="lazy" />
+              </ion-thumbnail>
+              <ion-label>
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.authorName }}</p>
+              </ion-label>
+              <ion-note slot="end" color="secondary">{{ item.categoryLabel }}</ion-note>
+            </ion-item>
+          }
+        </ion-list>
+      }
+    </section>
+  </div>
 </ion-content>

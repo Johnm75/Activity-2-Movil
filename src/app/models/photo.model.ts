@@ -1,94 +1,47 @@
 /**
- * @fileoverview Modelos de dominio para la galería de fotografías.
+ * Contratos de dominio para fotografías locales persistidas y catálogo remoto vía API REST.
  *
- * @description
- * Define las estructuras usadas por `PhotoService`: fotografías locales,
- * índice persistente, elementos remotos y códigos de error. Separar los modelos
- * permite tipar los signals y facilita los dobles de prueba.
- *
- * @author @capacitor-architect (Fase 3 / Fase 5A)
- * @phase SDD Fase 3 — Arquitectura Capacitor
- * @phase SDD Fase 5A — Plugins Nativos y Almacenamiento
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
+
+export type PhotoOriginSource = 'camera' | 'library';
 
 /**
- * Fotografía local lista para mostrar en la UI.
- *
- * `webviewPath` se calcula en runtime con `Capacitor.convertFileSrc` y no se persiste,
- * porque la ruta absoluta puede cambiar entre instalaciones (NFR-002).
+ * Fotografía hidratada para renderizado en la vista.
+ * `webviewDisplayUrl` se reconstruye en cada arranque con `Capacitor.convertFileSrc`
+ * y se excluye del índice persistido porque las rutas nativas absolutas pueden cambiar.
  */
-export interface PhotoItem {
-  // Identificador único generado en el dispositivo.
+export interface SavedPhoto {
   id: string;
-
-  // Ruta relativa dentro de `Directory.Data`, p. ej. `photos/1234567890-abc.jpeg`.
-  fileName: string;
-
-  // URL segura para el WebView, generada en memoria al cargar.
-  webviewPath: string;
-
-  // Formato de imagen (jpeg, png, webp, heic).
-  format: string;
-
-  // Fecha de captura o selección en formato ISO 8601 UTC.
-  capturedAt: string;
-
-  // Origen de la imagen: cámara nativa o galería del sistema.
-  source: 'camera' | 'library';
-
-  // Tamaño del archivo en bytes.
-  sizeBytes: number;
+  relativeFilePath: string;
+  webviewDisplayUrl: string;
+  imageExtension: string;
+  capturedAtIso: string;
+  originSource: PhotoOriginSource;
+  fileSizeBytes: number;
 }
 
-/**
- * Documento del índice local persistido en `@capacitor/preferences`.
- *
- * Incluye `schemaVersion` para futuras migraciones del formato.
- */
-export interface GalleryIndex {
-  // Versión del esquema; actualmente 1.
+export type PersistedPhotoMetadata = Omit<SavedPhoto, 'webviewDisplayUrl'>;
+
+export interface PersistedGalleryIndex {
   schemaVersion: 1;
-
-  // Fecha de última actualización del índice (ISO 8601).
-  updatedAt: string;
-
-  // Lista de fotografías persistidas, sin `webviewPath`.
-  items: PersistedPhoto[];
+  updatedAtIso: string;
+  items: PersistedPhotoMetadata[];
 }
 
-/**
- * Forma reducida de `PhotoItem` que se guarda en disco.
- *
- * Omite `webviewPath` porque se reconstruye al hidratar la galería.
- */
-export type PersistedPhoto = Omit<PhotoItem, 'webviewPath'>;
-
-/**
- * Elemento devuelto por el catálogo remoto `GET /photos`.
- */
-export interface RemotePhoto {
-  // Identificador único en el catálogo remoto.
+export interface RemoteCatalogPhoto {
   id: string;
-
-  // Título descriptivo de la fotografía.
   title: string;
-
-  // Autor o propietario de la imagen.
-  author: string;
-
-  // URL de la miniatura remota.
-  thumbUrl: string;
+  authorName: string;
+  categoryLabel: string;
+  thumbnailUrl: string;
 }
 
-/**
- * Códigos estables de error de la galería.
- *
- * La UI traduce cada código a un mensaje en español.
- */
-export type PhotoErrorCode =
-  | 'permission_denied'    // El usuario denegó permiso de cámara/galería.
-  | 'cancelled'            // El usuario canceló la captura o selección.
-  | 'unsupported_format'   // Formato de imagen no soportado.
-  | 'write_failed'         // Fallo al escribir en Filesystem.
-  | 'read_failed'          // Fallo al leer un archivo o el índice.
-  | 'index_corrupt';       // El JSON del índice está corrupto.
+export type GalleryErrorCode =
+  | 'permission_denied'
+  | 'cancelled'
+  | 'unsupported_format'
+  | 'write_failed'
+  | 'read_failed'
+  | 'index_corrupt';

@@ -1,81 +1,54 @@
 /**
- * @fileoverview Servicio de galería: captura, persistencia local y catálogo remoto.
+ * Servicio de fotografías: gestiona captura nativa con `@capacitor/camera`,
+ * persistencia binaria privada en `@capacitor/filesystem` (`Directory.Data`),
+ * índice estructurado en `@capacitor/preferences` y consumo del catálogo API REST.
  *
- * @description
- * `PhotoService` es la única puerta de acceso a `Camera`, `Filesystem` y a la
- * clave `gallery.index.v1` de `Preferences` para el dominio de fotografías.
- * Expone el estado como signals y reconstruye la galería desde disco al arrancar.
- *
- * @author @capacitor-architect (Fase 5A)
- * @phase SDD Fase 5A — Plugins Nativos y Almacenamiento
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-// Inyección de dependencias y signals de Angular.
 import { Injectable, computed, inject, signal } from '@angular/core';
-
-// Cliente HTTP para el catálogo remoto.
 import { HttpClient } from '@angular/common/http';
-
-// Operador rxjs para convertir observables en promesas.
 import { firstValueFrom } from 'rxjs';
-
-// Plugin de cámara de Capacitor.
 import { Camera, CameraResultType, CameraSource, type Photo } from '@capacitor/camera';
-
-// Plugin de sistema de archivos de Capacitor.
 import { Directory, Filesystem } from '@capacitor/filesystem';
-
-// Plugin de almacenamiento persistente de Capacitor.
 import { Preferences } from '@capacitor/preferences';
-
-// Utilidad de Capacitor para convertir URIs locales a URLs seguras para el WebView.
 import { Capacitor } from '@capacitor/core';
 
-// Modelos de dominio de la galería.
-import type { GalleryIndex, PersistedPhoto, PhotoErrorCode, PhotoItem, RemotePhoto } from '../models/photo.model';
-
-// Configuración de entorno (URL de API y claves de storage).
+import type {
+  GalleryErrorCode,
+  PersistedGalleryIndex,
+  PersistedPhotoMetadata,
+  PhotoOriginSource,
+  RemoteCatalogPhoto,
+  SavedPhoto,
+} from '../models/photo.model';
 import { environment } from '../../environments/environment';
-
-// Utilidades de seguridad de medios (Fase 6): listas blancas de extensión,
-// prevención de path traversal en el índice y validación de esquemas WebView.
 import {
-  isDisplayableWebviewSrc,
-  isSafePhotoPath,
-  isTrustedCaptureWebPath,
-  normalizeImageFormat,
+  isSafeRelativePhotoPath,
+  isSafeWebviewImageSource,
+  isTrustedCameraWebPath,
+  sanitizeImageExtension,
 } from '../utils/media-security.util';
 
-/**
- * Servicio singleton de la galería de fotografías.
- */
 @Injectable({
   providedIn: 'root',
 })
 export class PhotoService {
-  // Cliente HTTP inyectado para el catálogo remoto.
-  private readonly http = inject(HttpClient);
+  private readonly httpClient = inject(HttpClient);
 
-  // Signal con la lista de fotografías locales, ordenada de más reciente a más antigua.
-  readonly photos = signal<PhotoItem[]>([]);
+  readonly savedPhotos = signal<SavedPhoto[]>([]);
+  readonly remoteCatalogPhotos = signal<RemoteCatalogPhoto[]>([]);
+  readonly isLoadingGallery = signal<boolean>(false);
+  readonly isLoadingRemoteCatalog = signal<boolean>(false);
+  readonly galleryErrorCode = signal<GalleryErrorCode | null>(null);
+  readonly remoteCatalogErrorMessage = signal<string | null>(null);
+  readonly isGalleryEmpty = computed(() => this.savedPhotos().length === 0);
 
-  // Signal que indica si la galería está cargando o refrescando.
-  readonly loading = signal<boolean>(false);
+  private readonly galleryIndexKey = environment.galleryStorage.indexKey;
+  private readonly privatePhotosDirectory = 'photos';
 
-  // Signal con el último código de error de la galería, o `null` si no hay error.
-  readonly error = signal<PhotoErrorCode | null>(null);
-
-  // Computed que indica si la galería está vacía.
-  readonly isEmpty = computed(() => this.photos().length === 0);
-
-  // Clave de Preferences donde se guarda el índice de fotografías.
-  private readonly indexKey = environment.gallery.indexKey;
-
-  // Carpeta privada dentro de `Directory.Data` donde se escriben las fotos.
-  private readonly photosDirectory = 'photos';
-
-  // Opciones base de la cámara: usa URI, calidad 85, ancho máximo 2048 y no guarda en la galería del sistema.
-  private readonly cameraOptions = {
+  private readonly defaultCameraOptions = {
     resultType: CameraResultType.Uri,
     quality: 85,
     width: 2048,
@@ -85,398 +58,313 @@ export class PhotoService {
   } as const;
 
   /**
-   * Punto de entrada de alta nivel: abre la cámara o el selector y añade
-   * la fotografía resultante a la galería local.
-   *
-   * @param source Origen de la captura (`camera` o `library`).
-   * @returns El ítem creado o `null` si el usuario cancela.
+   * Captura una imagen desde la cámara o biblioteca y la persiste en almacenamiento privado.
+   * Devuelve `null` si el usuario cancela voluntariamente el selector nativo.
    */
-  async addNewToGallery(source: CameraSource = CameraSource.Prompt): Promise<PhotoItem | null> {
-    // Captura o selecciona la imagen.
-    const captured = await this.capturePhoto(source);
-    if (!captured) {
+  async captureAndSavePhoto(
+    captureSource: CameraSource = CameraSource.Prompt
+  ): Promise<SavedPhoto | null> {
+    const capturedPhoto = await this.requestPhotoFromDevice(captureSource);
+    if (!capturedPhoto) {
       return null;
     }
 
     try {
-      // Lee el contenido como base64 para escribirlo en Filesystem.
-      const base64Data = await this.readAsBase64(captured);
+      const base64ImageContent = await this.readCapturedPhotoAsBase64(capturedPhoto);
+      const imageExtension = sanitizeImageExtension(this.resolvePhotoExtension(capturedPhoto));
+      const originSource: PhotoOriginSource =
+        captureSource === CameraSource.Photos ? 'library' : 'camera';
 
-      // Determina el formato y lo reduce a la lista blanca permitida (SEC-005).
-      const format = normalizeImageFormat(this.inferFormat(captured));
+      const savedPhoto = await this.writePhotoToPrivateStorage(
+        base64ImageContent,
+        imageExtension,
+        originSource
+      );
+      await this.prependSavedPhoto(savedPhoto);
 
-      // Determina el origen real: prompt termina siendo camera o library según la elección del usuario.
-      const sourceType: 'camera' | 'library' = source === CameraSource.Photos ? 'library' : 'camera';
-
-      // Escribe el archivo en el almacenamiento privado y obtiene el ítem con URI.
-      const saved = await this.savePicture(base64Data, format, sourceType);
-
-      // Añade el nuevo ítem al principio del índice y actualiza la señal.
-      await this.prependPhoto(saved);
-
-      return saved;
+      return savedPhoto;
     } catch {
-      // Si algo falla después de la captura, reporta error de escritura.
-      this.error.set('write_failed');
+      this.galleryErrorCode.set('write_failed');
       throw new Error('write_failed');
     }
   }
 
-  /**
-   * Abre la cámara nativa o el selector de imágenes del sistema.
-   *
-   * @param source Origen de la captura.
-   * @returns Objeto `Photo` de Capacitor o `null` si el usuario cancela.
-   */
-  async capturePhoto(source: CameraSource = CameraSource.Prompt): Promise<Photo | null> {
+  async requestPhotoFromDevice(
+    captureSource: CameraSource = CameraSource.Prompt
+  ): Promise<Photo | null> {
     try {
-      this.error.set(null);
-      // Lanza el plugin de cámara con las opciones configuradas.
-      const photo = await Camera.getPhoto({
-        ...this.cameraOptions,
-        source,
+      this.galleryErrorCode.set(null);
+      return await Camera.getPhoto({
+        ...this.defaultCameraOptions,
+        source: captureSource,
       });
-      return photo;
-    } catch (err) {
-      // Detecta si el usuario canceló la operación.
-      if (this.isUserCancellation(err)) {
+    } catch (cameraError) {
+      if (this.isCameraCancelledByUser(cameraError)) {
         return null;
       }
-      // Otros errores se traducen a permiso denegado o error inesperado.
-      this.error.set('permission_denied');
+      this.galleryErrorCode.set('permission_denied');
       throw new Error('permission_denied');
     }
   }
 
   /**
-   * Lee el contenido de una foto como base64.
-   *
-   * En dispositivos híbridos usa `Filesystem.readFile`; en web descarga el blob
-   * desde `webPath` y lo convierte.
-   *
-   * @param photo Objeto `Photo` devuelto por `Camera.getPhoto`.
-   * @returns String base64 sin el prefijo data URL.
+   * En Android/iOS lee directamente el archivo temporal desde `capturedPhoto.path`;
+   * en navegador convierte el `blob:` generado por `@ionic/pwa-elements` a Base64.
    */
-  async readAsBase64(photo: Photo): Promise<string> {
-    // En móvil híbrido, `path` contiene la URI del archivo temporal.
-    if (photo.path) {
-      const file = await Filesystem.readFile({
-        path: photo.path,
-      });
-      // `readFile` devuelve un string base64 cuando no se solicita `DataURI`.
-      return file.data as string;
+  async readCapturedPhotoAsBase64(capturedPhoto: Photo): Promise<string> {
+    if (capturedPhoto.path) {
+      const nativeFile = await Filesystem.readFile({ path: capturedPhoto.path });
+      return nativeFile.data as string;
     }
 
-    // En navegador, `webPath` debe ser una URL local/blob confiable antes de hacer fetch.
-    if (!photo.webPath || !isTrustedCaptureWebPath(photo.webPath)) {
+    if (!capturedPhoto.webPath || !isTrustedCameraWebPath(capturedPhoto.webPath)) {
       throw new Error('read_failed');
     }
 
-    // Descarga la imagen como blob y la convierte a base64.
-    const response = await fetch(photo.webPath);
-    const blob = await response.blob();
-    return this.convertBlobToBase64(blob);
+    const fetchResponse = await fetch(capturedPhoto.webPath);
+    const imageBlob = await fetchResponse.blob();
+    return this.convertImageBlobToBase64(imageBlob);
   }
 
-  /**
-   * Convierte un blob en una cadena base64 pura.
-   *
-   * @param blob Blob de imagen.
-   * @returns Base64 sin prefijo data URL.
-   */
-  convertBlobToBase64(blob: Blob): Promise<string> {
+  convertImageBlobToBase64(imageBlob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
-      // FileReader permite leer el blob de forma asíncrona.
-      const reader = new FileReader();
+      const fileReader = new FileReader();
 
-      reader.onerror = () => reject(new Error('read_failed'));
-      reader.onload = () => {
-        // El resultado incluye el prefijo `data:image/jpeg;base64,`.
-        const dataUrl = reader.result as string;
-        // Separa el prefijo del contenido base64.
-        const base64 = dataUrl.split(',')[1];
-        if (!base64) {
+      fileReader.onerror = () => reject(new Error('read_failed'));
+      fileReader.onload = () => {
+        const dataUrl = fileReader.result as string;
+        const rawBase64Payload = dataUrl.split(',')[1];
+        if (!rawBase64Payload) {
           reject(new Error('read_failed'));
           return;
         }
-        resolve(base64);
+        resolve(rawBase64Payload);
       };
 
-      // Lee el blob como data URL.
-      reader.readAsDataURL(blob);
+      fileReader.readAsDataURL(imageBlob);
     });
   }
 
-  /**
-   * Escribe una imagen base64 en el almacenamiento privado de la app.
-   *
-   * @param base64 Datos de la imagen en base64.
-   * @param format Extensión del archivo (jpeg, png, etc.).
-   * @param source Origen de la imagen (`camera` o `library`).
-   * @returns Ítem de foto con su `webviewPath` lista para mostrar.
-   */
-  async savePicture(base64: string, format: string, source: 'camera' | 'library' = 'camera'): Promise<PhotoItem> {
-    // Normaliza el formato para impedir extensiones ejecutables o separadores de ruta.
-    const safeFormat = normalizeImageFormat(format);
+  async writePhotoToPrivateStorage(
+    base64Content: string,
+    rawFormat: string,
+    originSource: PhotoOriginSource = 'camera'
+  ): Promise<SavedPhoto> {
+    const safeExtension = sanitizeImageExtension(rawFormat);
+    const uniqueFileName = `${Date.now()}-${this.generateUniqueIdentifier()}.${safeExtension}`;
+    const relativeFilePath = `${this.privatePhotosDirectory}/${uniqueFileName}`;
 
-    // Genera un nombre de archivo único y seguro (SEC-005).
-    const fileName = `${Date.now()}-${this.randomId()}.${safeFormat}`;
-    const relativePath = `${this.photosDirectory}/${fileName}`;
-
-    // Escribe el archivo en el directorio privado de datos de la app.
     await Filesystem.writeFile({
-      path: relativePath,
-      data: base64,
+      path: relativeFilePath,
+      data: base64Content,
       directory: Directory.Data,
       recursive: true,
     });
 
-    // Obtiene la URI absoluta del archivo escrito.
-    const uriResult = await Filesystem.getUri({
-      path: relativePath,
+    const nativeFileUri = await Filesystem.getUri({
+      path: relativeFilePath,
+      directory: Directory.Data,
+    });
+    const fileMetadata = await Filesystem.stat({
+      path: relativeFilePath,
       directory: Directory.Data,
     });
 
-    // Convierte la URI del sistema en una URL segura para el WebView.
-    const webviewPath = Capacitor.convertFileSrc(uriResult.uri);
-
-    // Obtiene información del archivo para registrar su tamaño.
-    const stat = await Filesystem.stat({
-      path: relativePath,
-      directory: Directory.Data,
-    });
-
-    const photo: PhotoItem = {
-      id: this.randomId(),
-      fileName: relativePath,
-      webviewPath,
-      format: safeFormat,
-      capturedAt: new Date().toISOString(),
-      source,
-      sizeBytes: typeof stat.size === 'number' ? stat.size : 0,
+    return {
+      id: this.generateUniqueIdentifier(),
+      relativeFilePath,
+      webviewDisplayUrl: Capacitor.convertFileSrc(nativeFileUri.uri),
+      imageExtension: safeExtension,
+      capturedAtIso: new Date().toISOString(),
+      originSource,
+      fileSizeBytes: typeof fileMetadata.size === 'number' ? fileMetadata.size : 0,
     };
-
-    return photo;
   }
 
   /**
-   * Carga las fotografías guardadas desde el índice persistente y verifica
-   * que los archivos aún existan en disco (RISK-005).
+   * Hidrata la galería verificando que cada entrada del índice exista físicamente
+   * en `Directory.Data` y cumpla las reglas anti-*path-traversal*.
    */
-  async loadSaved(): Promise<void> {
-    this.loading.set(true);
-    this.error.set(null);
+  async loadSavedPhotos(): Promise<void> {
+    this.isLoadingGallery.set(true);
+    this.galleryErrorCode.set(null);
 
     try {
-      // Lee el índice de Preferences.
-      const index = await this.readIndex();
-      const validItems: PhotoItem[] = [];
+      const galleryIndex = await this.readPersistedGalleryIndex();
+      const verifiedPhotos: SavedPhoto[] = [];
 
-      // Verifica cada entrada; descarta rutas con traversal o archivos inexistentes.
-      for (const item of index.items) {
-        if (!isSafePhotoPath(item.fileName)) {
-          // Entrada manipulada o fuera de `photos/`: se descarta por seguridad.
+      for (const persistedItem of galleryIndex.items) {
+        if (!isSafeRelativePhotoPath(persistedItem.relativeFilePath)) {
           continue;
         }
 
         try {
-          // Obtiene la URI nativa y reconstruye la URL segura para el WebView.
-          const uriResult = await Filesystem.getUri({
-            path: item.fileName,
+          const nativeFileUri = await Filesystem.getUri({
+            path: persistedItem.relativeFilePath,
             directory: Directory.Data,
           });
 
-          const webviewPath = Capacitor.convertFileSrc(uriResult.uri);
-          if (!isDisplayableWebviewSrc(webviewPath)) {
-            // Rechaza esquemas no locales que el WebView no debe renderizar.
+          const webviewDisplayUrl = Capacitor.convertFileSrc(nativeFileUri.uri);
+          if (!isSafeWebviewImageSource(webviewDisplayUrl)) {
             continue;
           }
 
-          validItems.push({
-            ...item,
-            format: normalizeImageFormat(item.format),
-            webviewPath,
+          verifiedPhotos.push({
+            ...persistedItem,
+            imageExtension: sanitizeImageExtension(persistedItem.imageExtension),
+            webviewDisplayUrl,
           });
         } catch {
-          // Archivo huérfano: se omite sin interrumpir la carga del resto.
+          // Omite entradas cuyo archivo físico ya no exista sin interrumpir el resto de la galería.
         }
       }
 
-      // Ordena de más reciente a más antigua.
-      validItems.sort((a, b) => b.capturedAt.localeCompare(a.capturedAt));
-      this.photos.set(validItems);
+      verifiedPhotos.sort((first, second) =>
+        second.capturedAtIso.localeCompare(first.capturedAtIso)
+      );
+      this.savedPhotos.set(verifiedPhotos);
     } catch {
-      this.error.set('read_failed');
+      this.galleryErrorCode.set('read_failed');
     } finally {
-      this.loading.set(false);
+      this.isLoadingGallery.set(false);
     }
   }
 
-  /**
-   * Elimina una fotografía local previa confirmación.
-   *
-   * @param id Identificador de la fotografía.
-   */
-  async deletePhoto(id: string): Promise<void> {
-    const current = this.photos();
-    const target = current.find(p => p.id === id);
-    if (!target) {
+  async deleteSavedPhoto(photoId: string): Promise<void> {
+    const currentPhotos = this.savedPhotos();
+    const photoToDelete = currentPhotos.find(photo => photo.id === photoId);
+    if (!photoToDelete) {
       return;
     }
 
-    if (isSafePhotoPath(target.fileName)) {
+    if (isSafeRelativePhotoPath(photoToDelete.relativeFilePath)) {
       try {
-        // Borra el archivo del almacenamiento privado solo si la ruta es segura.
         await Filesystem.deleteFile({
-          path: target.fileName,
+          path: photoToDelete.relativeFilePath,
           directory: Directory.Data,
         });
       } catch {
-        // Si el archivo ya no existe, continuamos limpiando el índice.
+        // Si el archivo ya fue eliminado del disco, igualmente se depura el índice.
       }
     }
 
-    // Actualiza el índice y la señal.
-    const updated = current.filter(p => p.id !== id);
-    await this.persistIndex(updated);
-    this.photos.set(updated);
+    const remainingPhotos = currentPhotos.filter(photo => photo.id !== photoId);
+    await this.saveGalleryIndexToPreferences(remainingPhotos);
+    this.savedPhotos.set(remainingPhotos);
   }
 
   /**
-   * Obtiene el catálogo remoto de fotografías.
-   *
-   * @returns Lista de fotos remotas de ejemplo.
+   * Consume el endpoint protegido `GET /photos`; `jwtAuthInterceptor` adjunta
+   * automáticamente `Authorization: Bearer <token>` antes de salir por HTTP.
    */
-  async fetchRemotePhotos(): Promise<RemotePhoto[]> {
-    const url = `${environment.apiUrl}/photos`;
-    // El interceptor JWT añade la cabecera Authorization automáticamente.
-    const photos = await firstValueFrom(this.http.get<RemotePhoto[]>(url));
-    return photos;
+  async loadRemotePhotoCatalog(): Promise<RemoteCatalogPhoto[]> {
+    const catalogEndpointUrl = `${environment.apiBaseUrl}/photos`;
+    this.isLoadingRemoteCatalog.set(true);
+    this.remoteCatalogErrorMessage.set(null);
+
+    try {
+      const catalogItems = await firstValueFrom(
+        this.httpClient.get<RemoteCatalogPhoto[]>(catalogEndpointUrl)
+      );
+      this.remoteCatalogPhotos.set(catalogItems);
+      return catalogItems;
+    } catch {
+      this.remoteCatalogErrorMessage.set(
+        'No fue posible sincronizar el catálogo remoto autenticado.'
+      );
+      return [];
+    } finally {
+      this.isLoadingRemoteCatalog.set(false);
+    }
   }
 
-  /**
-   * Añade una foto al principio del índice y actualiza la señal.
-   *
-   * @param photo Fotografía recién guardada.
-   */
-  private async prependPhoto(photo: PhotoItem): Promise<void> {
-    const current = this.photos();
-    const updated = [photo, ...current];
-    await this.persistIndex(updated);
-    this.photos.set(updated);
+  private async prependSavedPhoto(newPhoto: SavedPhoto): Promise<void> {
+    const updatedPhotos = [newPhoto, ...this.savedPhotos()];
+    await this.saveGalleryIndexToPreferences(updatedPhotos);
+    this.savedPhotos.set(updatedPhotos);
   }
 
-  /**
-   * Lee y parsea el índice persistente.
-   *
-   * Si el JSON es inválido, conserva una copia del valor corrupto y devuelve
-   * un índice vacío (REQ-009).
-   */
-  private async readIndex(): Promise<GalleryIndex> {
-    const { value } = await Preferences.get({ key: this.indexKey });
+  private async readPersistedGalleryIndex(): Promise<PersistedGalleryIndex> {
+    const { value } = await Preferences.get({ key: this.galleryIndexKey });
     if (!value) {
-      return this.emptyIndex();
+      return this.createEmptyGalleryIndex();
     }
 
     try {
-      const parsed = JSON.parse(value) as GalleryIndex;
-      // Valida que tenga la forma mínima esperada.
-      if (!parsed || !Array.isArray(parsed.items)) {
+      const parsedIndex = JSON.parse(value) as PersistedGalleryIndex;
+      if (!parsedIndex || !Array.isArray(parsedIndex.items)) {
         throw new Error('index_corrupt');
       }
-      return parsed;
+      return parsedIndex;
     } catch {
-      // Guarda una copia del JSON corrupto para diagnóstico.
-      await Preferences.set({ key: `${this.indexKey}.corrupt`, value });
-      return this.emptyIndex();
+      // Conserva respaldo forense del índice dañado y restaura un estado vacío operativo.
+      await Preferences.set({ key: `${this.galleryIndexKey}.corrupt`, value });
+      return this.createEmptyGalleryIndex();
     }
   }
 
-  /**
-   * Persiste el índice actual en Preferences.
-   *
-   * @param photos Lista de fotografías con `webviewPath`.
-   */
-  private async persistIndex(photos: PhotoItem[]): Promise<void> {
-    // Omite `webviewPath` porque se reconstruye al cargar (NFR-002).
-    const persisted: PersistedPhoto[] = photos.map(({ webviewPath, ...rest }) => rest);
+  private async saveGalleryIndexToPreferences(photos: SavedPhoto[]): Promise<void> {
+    const persistedItems: PersistedPhotoMetadata[] = photos.map(
+      ({ webviewDisplayUrl: _ignoredUrl, ...metadata }) => metadata
+    );
 
-    const index: GalleryIndex = {
+    const galleryIndex: PersistedGalleryIndex = {
       schemaVersion: 1,
-      updatedAt: new Date().toISOString(),
-      items: persisted,
+      updatedAtIso: new Date().toISOString(),
+      items: persistedItems,
     };
 
-    await Preferences.set({ key: this.indexKey, value: JSON.stringify(index) });
+    await Preferences.set({
+      key: this.galleryIndexKey,
+      value: JSON.stringify(galleryIndex),
+    });
   }
 
-  /**
-   * Crea un índice vacío con la versión de esquema actual.
-   */
-  private emptyIndex(): GalleryIndex {
+  private createEmptyGalleryIndex(): PersistedGalleryIndex {
     return {
       schemaVersion: 1,
-      updatedAt: new Date().toISOString(),
+      updatedAtIso: new Date().toISOString(),
       items: [],
     };
   }
 
-  /**
-   * Determina el formato de imagen a partir de la foto capturada.
-   *
-   * @param photo Foto devuelta por `Camera.getPhoto`.
-   * @returns Extensión de archivo (jpeg, png, webp, heic).
-   */
-  private inferFormat(photo: Photo): string {
-    // Si el plugin indica formato, lo usamos directamente.
-    if (photo.format) {
-      return photo.format.toLowerCase();
+  private resolvePhotoExtension(capturedPhoto: Photo): string {
+    if (capturedPhoto.format) {
+      return capturedPhoto.format.toLowerCase();
     }
-    // Fallback: intenta deducir de la extensión de `path` o `webPath`.
-    const source = photo.path || photo.webPath || '';
-    const match = source.match(/\.([a-zA-Z0-9]+)(?:\?.*)?$/);
-    if (match) {
-      return match[1].toLowerCase();
-    }
-    // Valor por defecto seguro.
-    return 'jpeg';
+
+    const candidatePath = capturedPhoto.path || capturedPhoto.webPath || '';
+    const extensionMatch = candidatePath.match(/\.([a-zA-Z0-9]+)(?:\?.*)?$/);
+    return extensionMatch ? extensionMatch[1].toLowerCase() : 'jpeg';
   }
 
-  /**
-   * Genera un identificador aleatorio seguro.
-   *
-   * Usa `crypto.randomUUID` cuando esté disponible; si no, recurre a
-   * `crypto.getRandomValues` para evitar colisiones (SEC-005).
-   */
-  private randomId(): string {
+  private generateUniqueIdentifier(): string {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
       return crypto.randomUUID();
     }
-    // Respaldo basado en valores aleatorios de 16 bytes convertidos a hex.
-    const buffer = new Uint8Array(16);
+
+    const randomBytes = new Uint8Array(16);
     if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-      crypto.getRandomValues(buffer);
+      crypto.getRandomValues(randomBytes);
     } else {
-      // Último recurso para entornos muy limitados (no recomendado en producción).
-      for (let i = 0; i < buffer.length; i++) {
-        buffer[i] = Math.floor(Math.random() * 256);
+      for (let index = 0; index < randomBytes.length; index++) {
+        randomBytes[index] = Math.floor(Math.random() * 256);
       }
     }
-    return Array.from(buffer)
-      .map(b => b.toString(16).padStart(2, '0'))
+
+    return Array.from(randomBytes)
+      .map(byte => byte.toString(16).padStart(2, '0'))
       .join('');
   }
 
-  /**
-   * Detecta si un error del plugin de cámara corresponde a cancelación del usuario.
-   *
-   * @param err Error capturado.
-   * @returns `true` si el usuario canceló.
-   */
-  private isUserCancellation(err: unknown): boolean {
-    if (err instanceof Error) {
-      const message = err.message.toLowerCase();
-      return message.includes('cancel') || message.includes('canceled') || message.includes('user cancelled');
+  private isCameraCancelledByUser(error: unknown): boolean {
+    if (error instanceof Error) {
+      const normalizedMessage = error.message.toLowerCase();
+      return (
+        normalizedMessage.includes('cancel') ||
+        normalizedMessage.includes('canceled') ||
+        normalizedMessage.includes('user cancelled')
+      );
     }
     return false;
   }

@@ -1,37 +1,57 @@
 /**
- * @fileoverview Pruebas unitarias de `Tab1Page`.
+ * Pruebas unitarias de `Tab1Page` (Inicio y consumo API REST con JWT).
  *
- * @description
- * Comprueba que la primera pestaña se instancia sin errores y actualiza el
- * título accesible del documento al invocar `ionViewDidEnter()`.
- *
- * @author @quality-security-auditor (Fase 6)
- * @phase SDD Fase 6 — Calidad, Accesibilidad y Seguridad
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-// Utilidades de pruebas unitarias de Angular.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-// Router en memoria para satisfacer enlaces internos de Ionic.
+import { signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-// Módulo de feature de la pestaña 1.
 import { Tab1PageModule } from './tab1.module';
-
-// Componente bajo prueba.
 import { Tab1Page } from './tab1.page';
+import { PhotoService } from '../services/photo.service';
+import { JwtAuthenticationService } from '../services/auth-jwt.service';
+import type { RemoteCatalogPhoto, SavedPhoto } from '../models/photo.model';
 
 describe('Tab1Page', () => {
-  // Referencia al componente instanciado.
   let component: Tab1Page;
-
-  // Fixture con acceso a la plantilla renderizada.
   let fixture: ComponentFixture<Tab1Page>;
+  let loadRemoteCatalogSpy: ReturnType<typeof vi.fn>;
+  let loadSavedPhotosSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    // Configura el módulo de prueba con las dependencias de la pestaña 1.
+    loadRemoteCatalogSpy = vi.fn().mockResolvedValue([]);
+    loadSavedPhotosSpy = vi.fn().mockResolvedValue(undefined);
+
+    const photoServiceMock = {
+      savedPhotos: signal<SavedPhoto[]>([]),
+      remoteCatalogPhotos: signal<RemoteCatalogPhoto[]>([
+        {
+          id: 'api-01',
+          title: 'Recurso REST Protegido',
+          authorName: 'API Académica',
+          categoryLabel: 'JWT',
+          thumbnailUrl: 'data:image/svg+xml;utf8,test',
+        },
+      ]),
+      isLoadingRemoteCatalog: signal<boolean>(false),
+      remoteCatalogErrorMessage: signal<string | null>(null),
+      loadSavedPhotos: loadSavedPhotosSpy,
+      loadRemotePhotoCatalog: loadRemoteCatalogSpy,
+    };
+
+    const authenticationServiceMock = {
+      maskedTokenPreview: signal<string>('eyJhbGciOi…hmac'),
+    };
+
     await TestBed.configureTestingModule({
       imports: [Tab1PageModule, RouterModule.forRoot([])],
+      providers: [
+        { provide: PhotoService, useValue: photoServiceMock },
+        { provide: JwtAuthenticationService, useValue: authenticationServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Tab1Page);
@@ -39,11 +59,15 @@ describe('Tab1Page', () => {
     fixture.detectChanges();
   });
 
-  it('debe instanciar la pestaña 1 y anunciar el título al entrar', () => {
-    // Verifica la creación del componente.
+  it('debe sincronizar el catálogo API REST en ngOnInit y renderizar los elementos recibidos', () => {
     expect(component).toBeTruthy();
+    expect(loadSavedPhotosSpy).toHaveBeenCalledTimes(1);
+    expect(loadRemoteCatalogSpy).toHaveBeenCalledTimes(1);
 
-    // Ejecuta el hook de Ionic y comprueba que actualiza `document.title`.
+    const hostText = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(hostText).toContain('Recurso REST Protegido');
+    expect(hostText).toContain('eyJhbGciOi…hmac');
+
     component.ionViewDidEnter();
     expect(document.title).toContain('Inicio');
   });

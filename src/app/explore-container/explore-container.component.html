@@ -1,20 +1,6 @@
-<!--
-  @fileoverview Plantilla de `ExploreContainerComponent`.
-
-  @description
-  Renderiza el título recibido mediante el signal `name()` y un enlace seguro
-  (`rel="noopener noreferrer"`) hacia la guía oficial de componentes UI de Ionic.
-
-  @author @ionic-ui-animator (Fase 5B)
-  @author @quality-security-auditor (Fase 6 — auditoría de comentarios)
-  @phase SDD Fase 5B — Desarrollo de componentes y navegación
--->
-
-<!-- Contenedor centrado vertical y horizontalmente dentro del área de contenido. -->
+<!-- Contenedor base de plantilla Ionic | Autor: John Fredy Marciales Morales | Fecha: 2026-11-06 -->
 <div id="container">
-  <!-- Título dinámico de la vista actual leído desde el signal input `name()`. -->
-  <strong>{{ name() }}</strong>
-  <!-- Texto de orientación con enlace externo protegido contra tabnabbing (`noopener noreferrer`). -->
+  <strong>{{ sectionTitle() }}</strong>
   <p>
     Explora los
     <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">

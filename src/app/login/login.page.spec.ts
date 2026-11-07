@@ -1,53 +1,32 @@
 /**
- * @fileoverview Pruebas unitarias y de accesibilidad de `LoginPage`.
+ * Pruebas unitarias de `LoginPage`.
  *
- * @description
- * Comprueba la validación reactiva de correo/contraseña, la traducción de
- * códigos de error en un banner `role="alert"` y la sanitización del destino
- * `returnUrl` tras un inicio de sesión exitoso.
- *
- * @author @ionic-ui-animator (Fase 5B)
- * @author @quality-security-auditor (Fase 6 — pruebas de validación, error y seguridad)
- * @phase SDD Fase 6 — Calidad, Accesibilidad y Seguridad
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-// Utilidades de pruebas de componentes de Angular.
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-// Enrutador para verificar redirecciones post-login.
 import { ActivatedRoute, Router, RouterModule, convertToParamMap } from '@angular/router';
 
-// Módulo de feature de la pantalla de login.
 import { LoginPageModule } from './login.module';
-
-// Componente bajo prueba.
 import { LoginPage } from './login.page';
-
-// Servicio de autenticación simulado.
-import { AuthJwtService } from '../services/auth-jwt.service';
+import { JwtAuthenticationService } from '../services/auth-jwt.service';
 
 describe('LoginPage', () => {
-  // Instancia del componente bajo prueba.
   let component: LoginPage;
-
-  // Fixture de prueba con acceso al DOM.
   let fixture: ComponentFixture<LoginPage>;
-
-  // Doble del servicio de autenticación.
-  let authStub: { login: ReturnType<typeof vi.fn> };
-
-  // Espía sobre `Router.navigateByUrl`.
+  let authenticationStub: { authenticateWithCredentials: ReturnType<typeof vi.fn> };
   let router: Router;
 
   beforeEach(async () => {
-    authStub = {
-      login: vi.fn(),
+    authenticationStub = {
+      authenticateWithCredentials: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
       imports: [LoginPageModule, RouterModule.forRoot([])],
       providers: [
-        { provide: AuthJwtService, useValue: authStub },
+        { provide: JwtAuthenticationService, useValue: authenticationStub },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -69,49 +48,56 @@ describe('LoginPage', () => {
     vi.restoreAllMocks();
   });
 
-  it('no debe invocar AuthJwtService.login si el formulario es inválido y debe exponer mensajes en español', async () => {
-    await component.onSubmit();
+  it('no debe enviar credenciales si el formulario es inválido y debe reportar mensajes de validación', async () => {
+    await component.submitLoginForm();
 
-    expect(authStub.login).not.toHaveBeenCalled();
-    expect(component.fieldError('email')).toContain('obligatorio');
-    expect(component.fieldError('password')).toContain('obligatoria');
+    expect(authenticationStub.authenticateWithCredentials).not.toHaveBeenCalled();
+    expect(component.getFieldValidationMessage('email')).toContain('obligatorio');
+    expect(component.getFieldValidationMessage('password')).toContain('obligatoria');
   });
 
-  it('debe navegar a /tabs/tab2 descartando un returnUrl malicioso tras login exitoso', async () => {
-    const navSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
-    authStub.login.mockResolvedValue({
-      token: 'jwt',
-      expiresAt: Date.now() + 60_000,
-      user: { id: 'u-1', name: 'Demo', email: 'estudiante@example.com', role: 'student' },
+  it('debe redirigir a /tabs/tab2 descartando un returnUrl malicioso tras autenticar', async () => {
+    const navigateSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    authenticationStub.authenticateWithCredentials.mockResolvedValue({
+      accessToken: 'jwt',
+      expiresAtTimestampMs: Date.now() + 60_000,
+      userProfile: {
+        id: 'u-1',
+        fullName: 'Demo',
+        email: 'estudiante@example.com',
+        role: 'student',
+      },
     });
 
-    component.form.setValue({
+    component.credentialsForm.setValue({
       email: 'estudiante@example.com',
       password: 'Demo1234!',
     });
-    await component.onSubmit();
+    await component.submitLoginForm();
 
-    expect(navSpy).toHaveBeenCalledWith('/tabs/tab2', { replaceUrl: true });
+    expect(navigateSpy).toHaveBeenCalledWith('/tabs/tab2', { replaceUrl: true });
   });
 
-  it('debe renderizar un banner accesible role="alert" cuando el login rechaza con invalid_credentials', async () => {
-    authStub.login.mockRejectedValue('invalid_credentials');
+  it('debe mostrar alerta accesible role="alert" ante credenciales inválidas', async () => {
+    authenticationStub.authenticateWithCredentials.mockRejectedValue('invalid_credentials');
 
-    component.form.setValue({
+    component.credentialsForm.setValue({
       email: 'estudiante@example.com',
       password: 'Incorrecta1!',
     });
-    await component.onSubmit();
+    await component.submitLoginForm();
     fixture.detectChanges();
 
-    const alertEl = (fixture.nativeElement as HTMLElement).querySelector('.login-error[role="alert"]');
-    expect(alertEl?.textContent).toContain('Correo o contraseña incorrectos');
+    const alertElement = (fixture.nativeElement as HTMLElement).querySelector(
+      '.login-error[role="alert"]'
+    );
+    expect(alertElement?.textContent).toContain('Correo o contraseña incorrectos');
   });
 
-  it('debe autocompletar las credenciales de demostración al invocar fillDemoCredentials()', () => {
-    component.fillDemoCredentials();
+  it('debe cargar las credenciales de demostración al invocar populateDemoCredentials()', () => {
+    component.populateDemoCredentials();
 
-    expect(component.form.getRawValue()).toEqual(component.demoCredentials);
-    expect(component.form.valid).toBe(true);
+    expect(component.credentialsForm.getRawValue()).toEqual(component.demoAccountCredentials);
+    expect(component.credentialsForm.valid).toBe(true);
   });
 });

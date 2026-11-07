@@ -1,17 +1,10 @@
 /**
- * @fileoverview Estilos encapsulados de `ExploreContainerComponent`.
+ * Estilos de `ExploreContainerComponent`.
  *
- * @description
- * Centra el bloque informativo dentro del área visible y utiliza variables de
- * color adaptables al modo claro/oscuro de Ionic con contraste suficiente
- * según WCAG 2.2 AA.
- *
- * @author @ionic-ui-animator (Fase 4)
- * @author @quality-security-auditor (Fase 6 — contraste accesible y comentarios)
- * @phase SDD Fase 4 — Diseño Ionic y UX móvil nativa
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-/* Contenedor centrado verticalmente mediante posicionamiento y traslación en GPU. */
 #container {
   text-align: center;
   position: absolute;
@@ -22,13 +15,11 @@
   padding-inline: 16px;
 }
 
-/* Encabezado principal del bloque informativo. */
 #container strong {
   font-size: 1.25rem;
   line-height: 1.625rem;
 }
 
-/* Párrafo descriptivo secundario adaptable a esquema claro y oscuro. */
 #container p {
   font-size: 1rem;
   line-height: 1.375rem;
@@ -36,7 +27,6 @@
   margin: 4px 0 0;
 }
 
-/* Enlace externo con subrayado accesible para no depender únicamente del color (WCAG 1.4.1). */
 #container a {
   text-decoration: underline;
 }

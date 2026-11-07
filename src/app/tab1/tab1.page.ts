@@ -1,65 +1,64 @@
 /**
- * @fileoverview Página «Inicio» (`Tab1Page`).
+ * Pestaña «Inicio» (`Tab1Page`): presenta el resumen del almacenamiento local
+ * y ejecuta el consumo del endpoint API REST protegido (`GET /v1/photos`) mediante JWT.
  *
- * @description
- * Panel de bienvenida que orienta al estudiante sobre las capacidades nativas
- * de la aplicación (captura con `@capacitor/camera`, almacenamiento privado en
- * `Directory.Data` y sesión protegida con JWT) y ofrece botones directos hacia
- * la Galería y la Cuenta.
- *
- * @author @ionic-ui-animator (Fase 5B)
- * @author @quality-security-auditor (Fase 6 — accesibilidad y comentarios)
- * @phase SDD Fase 5B — Desarrollo de componentes y navegación
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
-// Decorador de componente del núcleo de Angular.
-import { Component } from '@angular/core';
-
-// Registro de iconos de Ionicons usados en las tarjetas y botones de inicio.
+import { Component, OnInit, computed, inject } from '@angular/core';
+import type { ViewDidEnter } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
-  cameraOutline,
+  cloudDownloadOutline,
   imagesOutline,
   personCircleOutline,
+  refreshOutline,
   shieldCheckmarkOutline,
 } from 'ionicons/icons';
 
-// Contrato de ciclo de vida Ionic al activarse la pestaña.
-import type { ViewDidEnter } from '@ionic/angular';
+import { PhotoService } from '../services/photo.service';
+import { JwtAuthenticationService } from '../services/auth-jwt.service';
+import { announcePageNavigation } from '../utils/a11y-announce.util';
 
-// Utilidad accesible para anunciar la ruta activa a TalkBack y VoiceOver.
-import { announceScreen } from '../utils/a11y-announce.util';
-
-/**
- * Componente de la pestaña «Inicio».
- */
 @Component({
-  // Selector empleado por el router de pestañas.
   selector: 'app-tab1',
-  // Plantilla HTML con tarjeta hero y botones de acción directa.
   templateUrl: 'tab1.page.html',
-  // Hoja de estilos encapsulada de la pestaña de inicio.
   styleUrls: ['tab1.page.scss'],
-  // Declarado en `Tab1PageModule`.
   standalone: false,
 })
-export class Tab1Page implements ViewDidEnter {
-  /**
-   * Registra los iconos decorativos utilizados en el panel de bienvenida.
-   */
+export class Tab1Page implements OnInit, ViewDidEnter {
+  private readonly photoService = inject(PhotoService);
+  private readonly authenticationService = inject(JwtAuthenticationService);
+
+  readonly savedPhotosCount = computed(() => this.photoService.savedPhotos().length);
+  readonly remoteCatalogPhotos = this.photoService.remoteCatalogPhotos;
+  readonly isLoadingRemoteCatalog = this.photoService.isLoadingRemoteCatalog;
+  readonly remoteCatalogErrorMessage = this.photoService.remoteCatalogErrorMessage;
+  readonly maskedTokenPreview = this.authenticationService.maskedTokenPreview;
+
   constructor() {
     addIcons({
-      cameraOutline,
+      cloudDownloadOutline,
       imagesOutline,
       personCircleOutline,
+      refreshOutline,
       shieldCheckmarkOutline,
     });
   }
 
-  /**
-   * Anuncia el cambio de pestaña a lectores de pantalla y traslada el foco al título.
-   */
+  ngOnInit(): void {
+    if (this.photoService.savedPhotos().length === 0) {
+      void this.photoService.loadSavedPhotos();
+    }
+    void this.synchronizeRemoteCatalog();
+  }
+
   ionViewDidEnter(): void {
-    announceScreen('Inicio — Galería de Fotos', 'tab1-title');
+    announcePageNavigation('Inicio — Galería de Fotos', 'tab1-title');
+  }
+
+  async synchronizeRemoteCatalog(): Promise<void> {
+    await this.photoService.loadRemotePhotoCatalog();
   }
 }

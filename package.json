@@ -1,7 +1,7 @@
 {
   "name": "photo-gallery",
   "version": "0.0.1",
-  "author": "Ionic Framework",
+  "author": "John Fredy Marciales Morales",
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
@@ -47,5 +47,5 @@
     "typescript-eslint": "^8.61.0",
     "vitest": "^5.1.0"
   },
-  "description": "An Ionic project"
+  "description": "Aplicación móvil híbrida Ionic/Angular con almacenamiento local en Capacitor y arquitectura Token JWT — Desarrollado por John Fredy Marciales Morales"
 }

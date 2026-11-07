@@ -1,54 +1,37 @@
 /**
- * @fileoverview Anuncio de cambio de pantalla para lectores de pantalla.
+ * Utilidades de gestión de foco y anuncio de rutas SPA para lectores de pantalla en WebView.
  *
- * @description
- * El WebView no anuncia las navegaciones de una SPA. Estas funciones actualizan
- * `document.title` y mueven el foco al encabezado de la pantalla (WCAG 2.4.2
- * y 2.4.3) para que TalkBack y VoiceOver confirmen el destino. También
- * restauran el foco al control que abrió un diálogo nativo (cámara).
- *
- * @author @quality-security-auditor (Fase 6)
- * @phase SDD Fase 6 — Calidad, Accesibilidad y Seguridad
+ * @author John Fredy Marciales Morales
+ * @date 2026-11-06
  */
 
 /**
- * Publica el título de la pantalla y enfoca su encabezado.
- *
- * @param title Título del documento, visible en el conmutador de Android.
- * @param headingId `id` del `<h1>` de la pantalla (debe poder recibir foco).
+ * Actualiza el título del documento y traslada el foco al encabezado principal
+ * porque las transiciones internas de una SPA no son anunciadas de oficio por TalkBack/VoiceOver.
  */
-export function announceScreen(title: string, headingId: string): void {
-  // El título del documento es el anuncio de respaldo del sistema operativo.
-  document.title = title;
+export function announcePageNavigation(pageTitle: string, headingElementId: string): void {
+  document.title = pageTitle;
 
-  // El encabezado debe existir en la vista ya renderizada.
-  const heading = document.getElementById(headingId);
-  if (!(heading instanceof HTMLElement)) {
+  const headingElement = document.getElementById(headingElementId);
+  if (!(headingElement instanceof HTMLElement)) {
     return;
   }
 
-  // `tabindex="-1"` permite enfocar un encabezado que no es un control.
-  if (!heading.hasAttribute('tabindex')) {
-    heading.tabIndex = -1;
+  if (!headingElement.hasAttribute('tabindex')) {
+    headingElement.tabIndex = -1;
   }
 
-  // Mover el foco hace que el lector anuncie el nombre de la pantalla.
-  heading.focus();
+  headingElement.focus();
 }
 
 /**
- * Devuelve el foco al control que disparó una UI nativa (cámara, alerta).
- *
- * Tras cerrarse el modal nativo el foco suele caer en `<body>` y el usuario
- * de teclado o switch pierde la posición.
- *
- * @param element Control que tenía el foco antes de la ida nativa.
+ * Restaura el foco al control que abrió un diálogo nativo (como la cámara),
+ * evitando que el cursor accesible quede perdido en `<body>` al regresar.
  */
-export function restoreFocus(element: HTMLElement | null): void {
-  // Si el nodo ya no está en el documento, no hay nada que restaurar.
-  if (!element || !element.isConnected) {
+export function restoreElementFocus(previousElement: HTMLElement | null): void {
+  if (!previousElement || !previousElement.isConnected) {
     return;
   }
 
-  element.focus();
+  previousElement.focus();
 }
