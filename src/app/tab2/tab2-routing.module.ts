@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { Tab2Page } from './tab2.page';
 
+// Ruta base del módulo perezoso correspondiente a la galería (`/tabs/tab2`).
 const tab2Routes: Routes = [
   {
     path: '',
@@ -17,6 +18,7 @@ const tab2Routes: Routes = [
   },
 ];
 
+// Configura el enrutamiento interno de la pestaña de galería.
 @NgModule({
   imports: [RouterModule.forChild(tab2Routes)],
   exports: [RouterModule],

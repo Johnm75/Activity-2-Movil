@@ -22,7 +22,9 @@ import { mockRestApiInterceptor } from './interceptors/mock-api.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    // Agrupa eventos del DOM en un mismo ciclo para reducir detecciones innecesarias en móvil.
     provideZoneChangeDetection({ eventCoalescing: true }),
+    // Conserva vivas en caché las vistas al alternar entre pestañas de Ionic.
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideRouter(appRoutes),
     provideIonicAngular({}),

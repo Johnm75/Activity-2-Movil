@@ -3,6 +3,7 @@
  * Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
  */
 
+/* Núcleo de hojas de estilo de Ionic y activación automática de paleta oscura del sistema. */
 @import "@ionic/angular/css/core.css";
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
@@ -15,6 +16,7 @@
 @import "@ionic/angular/css/flex-utils.css";
 @import "@ionic/angular/css/palettes/dark.system.css";
 
+/* Ajustes base del WebView: elimina destello azul al tocar y rebotes de scroll externos. */
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
@@ -26,6 +28,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Garantiza ocupación completa en navegadores móviles con barras de dirección dinámicas. */
 ion-app {
   min-height: 100vh;
   min-height: 100dvh;
@@ -57,6 +60,7 @@ ion-chip {
   -webkit-touch-callout: none;
 }
 
+/* Tamaño mínimo táctil de 48 px (WCAG 2.5.5) y proporciones uniformes en botones Ionic. */
 ion-button {
   --border-radius: 14px;
   --padding-top: 13px;
@@ -79,6 +83,7 @@ ion-button[fill="outline"] {
   --background: rgba(var(--ion-color-primary-rgb), 0.06);
 }
 
+/* Acabado de cabeceras, barra inferior de pestañas y tarjetas reutilizables entre vistas. */
 ion-header ion-toolbar {
   --border-width: 0 0 1px 0;
   --border-color: var(--app-surface-border);

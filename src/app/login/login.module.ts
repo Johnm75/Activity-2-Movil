@@ -20,6 +20,7 @@ import {
 import { LoginPage } from './login.page';
 import { LoginPageRoutingModule } from './login-routing.module';
 
+// Importa únicamente los controles standalone de Ionic usados en el formulario para reducir el bundle.
 @NgModule({
   imports: [
     CommonModule,

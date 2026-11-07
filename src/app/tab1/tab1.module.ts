@@ -27,6 +27,7 @@ import {
 import { Tab1Page } from './tab1.page';
 import { Tab1PageRoutingModule } from './tab1-routing.module';
 
+// Reúne `RouterModule` para enlaces rápidos y los controles Ionic del listado remoto.
 @NgModule({
   imports: [
     CommonModule,

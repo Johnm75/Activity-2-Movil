@@ -11,6 +11,9 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { JwtAuthenticationService } from '../services/auth-jwt.service';
 import { sanitizePostLoginRedirectUrl } from '../utils/return-url.util';
 
+/**
+ * Permite continuar hacia `/tabs` si el token sigue vigente; de lo contrario redirige a `/login`.
+ */
 export const authenticatedRouteGuard: CanActivateFn = async (_route, routerState) => {
   const authenticationService = inject(JwtAuthenticationService);
   const router = inject(Router);

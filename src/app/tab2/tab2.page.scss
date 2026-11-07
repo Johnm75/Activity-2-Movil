@@ -5,6 +5,7 @@
  * @date 2026-11-06
  */
 
+// Tiempos de aparición escalonada de miniaturas y retroalimentación al toque.
 $ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
 $photo-enter-duration: 260ms;
 $press-duration: 140ms;
@@ -14,10 +15,12 @@ $press-duration: 140ms;
   font-weight: 700;
 }
 
+// Reserva espacio inferior suficiente para que el FAB no cubra la última fila de fotos.
 .photo-grid {
   padding: 10px 8px calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
+// Celda interactiva cuadrada (`1:1`) optimizada como botón accesible.
 .photo-cell {
   width: 100%;
   padding: 0;
@@ -41,6 +44,7 @@ $press-duration: 140ms;
   display: block;
 }
 
+// Entrada sutil con opacidad y escala usando solo propiedades aceleradas por GPU.
 @keyframes photo-enter {
   from {
     opacity: 0;
@@ -52,6 +56,7 @@ $press-duration: 140ms;
   }
 }
 
+// Posicionamiento del botón flotante de cámara sobre la barra inferior y safe-area.
 .camera-fab {
   margin-inline-end: 16px;
   margin-bottom: calc(16px + var(--ion-safe-area-bottom, 0px));
@@ -69,6 +74,7 @@ $press-duration: 140ms;
   }
 }
 
+// Contenedor centrado para los estados de carga, error de lectura y galería vacía.
 .state-wrapper {
   min-height: 72dvh;
   display: flex;
@@ -126,6 +132,7 @@ $press-duration: 140ms;
   line-height: 1.5;
 }
 
+// Desactiva la animación de entrada cuando el sistema solicita movimiento reducido.
 @media (prefers-reduced-motion: reduce) {
   .photo-cell {
     animation: none;

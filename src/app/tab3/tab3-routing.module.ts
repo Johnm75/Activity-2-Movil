@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { Tab3Page } from './tab3.page';
 
+// Ruta base del módulo perezoso asociado a la vista de cuenta (`/tabs/tab3`).
 const tab3Routes: Routes = [
   {
     path: '',
@@ -17,6 +18,7 @@ const tab3Routes: Routes = [
   },
 ];
 
+// Habilita el enrutamiento hijo para la pestaña de cuenta y cierre de sesión.
 @NgModule({
   imports: [RouterModule.forChild(tab3Routes)],
   exports: [RouterModule],

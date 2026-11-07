@@ -12,8 +12,10 @@
   <meta name="color-scheme" content="light dark" />
   <!-- Mantiene el zoom accesible (WCAG 1.4.4) y adapta safe-areas e interacción con teclado móvil. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+  <!-- Barra de estado adaptada al esquema de color del sistema operativo. -->
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111827" />
+  <!-- Evita enlaces telefónicos accidentales y destellos táctiles heredados en WebView. -->
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />
   <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
@@ -22,6 +24,7 @@
 </head>
 
 <body>
+  <!-- Punto de montaje del componente raíz de Angular. -->
   <app-root></app-root>
 </body>
 

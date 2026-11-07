@@ -26,6 +26,7 @@ import {
 import { Tab3Page } from './tab3.page';
 import { Tab3PageRoutingModule } from './tab3-routing.module';
 
+// Carga únicamente los elementos visuales de perfil, detalle de sesión y alerta de salida.
 @NgModule({
   imports: [
     CommonModule,

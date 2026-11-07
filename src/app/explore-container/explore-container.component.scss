@@ -5,6 +5,7 @@
  * @date 2026-11-06
  */
 
+// Centrado absoluto vertical y horizontal para el bloque informativo base.
 #container {
   text-align: center;
   position: absolute;
@@ -15,6 +16,7 @@
   padding-inline: 16px;
 }
 
+// Jerarquía tipográfica del título y texto secundario con contraste accesible.
 #container strong {
   font-size: 1.25rem;
   line-height: 1.625rem;

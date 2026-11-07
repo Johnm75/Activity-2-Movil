@@ -19,6 +19,7 @@ import {
 import { TabsPageRoutingModule } from './tabs-routing.module';
 import { TabsPage } from './tabs.page';
 
+// Ensambla los controles de `IonTabs` que alojan la navegación principal de la app.
 @NgModule({
   imports: [
     CommonModule,

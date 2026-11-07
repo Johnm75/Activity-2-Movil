@@ -16,6 +16,9 @@ import { home, images, person } from 'ionicons/icons';
   standalone: false,
 })
 export class TabsPage {
+  /**
+   * Registra los iconos de las tres pestañas principales de la barra inferior.
+   */
   constructor() {
     addIcons({ home, images, person });
   }

@@ -31,12 +31,16 @@ export class Tab1Page implements OnInit, ViewDidEnter {
   private readonly photoService = inject(PhotoService);
   private readonly authenticationService = inject(JwtAuthenticationService);
 
+  // Señales derivadas del almacenamiento local y del catálogo remoto protegido por JWT.
   readonly savedPhotosCount = computed(() => this.photoService.savedPhotos().length);
   readonly remoteCatalogPhotos = this.photoService.remoteCatalogPhotos;
   readonly isLoadingRemoteCatalog = this.photoService.isLoadingRemoteCatalog;
   readonly remoteCatalogErrorMessage = this.photoService.remoteCatalogErrorMessage;
   readonly maskedTokenPreview = this.authenticationService.maskedTokenPreview;
 
+  /**
+   * Registra los iconos utilizados en el resumen inicial y la tarjeta REST.
+   */
   constructor() {
     addIcons({
       cloudDownloadOutline,
@@ -47,6 +51,9 @@ export class Tab1Page implements OnInit, ViewDidEnter {
     });
   }
 
+  /**
+   * Hidrata el conteo de fotos locales si aún no estaba en memoria y consulta la API REST.
+   */
   ngOnInit(): void {
     if (this.photoService.savedPhotos().length === 0) {
       void this.photoService.loadSavedPhotos();
@@ -54,10 +61,16 @@ export class Tab1Page implements OnInit, ViewDidEnter {
     void this.synchronizeRemoteCatalog();
   }
 
+  /**
+   * Anuncia el cambio a la pestaña de inicio para tecnologías de asistencia.
+   */
   ionViewDidEnter(): void {
     announcePageNavigation('Inicio — Galería de Fotos', 'tab1-title');
   }
 
+  /**
+   * Solicita nuevamente al servicio el catálogo remoto autenticado con Bearer JWT.
+   */
   async synchronizeRemoteCatalog(): Promise<void> {
     await this.photoService.loadRemotePhotoCatalog();
   }

@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 
 import { ExploreContainerComponent } from './explore-container.component';
 
+// Declara y exporta el componente auxiliar heredado de la plantilla base `tabs`.
 @NgModule({
   imports: [CommonModule, FormsModule],
   declarations: [ExploreContainerComponent],

@@ -3,10 +3,12 @@
   Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
 -->
 <ion-content [fullscreen]="true" class="login-content">
+  <!-- Fondo decorativo superior ignorado por lectores de pantalla. -->
   <div class="login-backdrop" aria-hidden="true"></div>
 
   <div class="login-wrapper">
     <section class="login-card app-surface-card">
+      <!-- Identidad visual y encabezado receptor del foco al abrir la vista. -->
       <header class="login-header">
         <div class="login-logo-badge" aria-hidden="true">
           <ion-icon name="camera" class="login-logo"></ion-icon>
@@ -15,6 +17,7 @@
         <p class="login-subtitle">Accede a tu espacio privado de capturas</p>
       </header>
 
+      <!-- Formulario reactivo de credenciales con validación en línea. -->
       <form
         class="login-form"
         [formGroup]="credentialsForm"
@@ -22,6 +25,7 @@
         novalidate
         aria-labelledby="login-title">
 
+        <!-- Campo de correo con teclado específico y mensajes de validación contextuales. -->
         <ion-input
           class="login-field"
           formControlName="email"
@@ -38,6 +42,7 @@
           helperText="Ingresa tu correo institucional o de prueba.">
         </ion-input>
 
+        <!-- Campo de contraseña con botón nativo de Ionic para alternar visibilidad. -->
         <ion-input
           class="login-field"
           formControlName="password"
@@ -53,6 +58,7 @@
           <ion-input-password-toggle slot="end"></ion-input-password-toggle>
         </ion-input>
 
+        <!-- Aviso inmediato para fallos de credenciales o conexión (`role="alert"`). -->
         @if (authenticationErrorMessage(); as errorMessage) {
           <div class="login-error" role="alert" aria-live="assertive">
             <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
@@ -60,6 +66,7 @@
           </div>
         }
 
+        <!-- Acción principal de envío bloqueada mientras hay una petición en curso. -->
         <ion-button
           class="submit-button"
           expand="block"
@@ -77,6 +84,7 @@
           }
         </ion-button>
 
+        <!-- Atajo visible solo cuando el interceptor mock está activo para pruebas locales. -->
         @if (isDemoModeEnabled) {
           <div class="demo-panel" aria-live="polite">
             <p class="demo-hint">

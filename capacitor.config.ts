@@ -7,9 +7,11 @@
 
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// Parámetros de identidad de paquete, directorio compilado y origen seguro del WebView.
 const capacitorConfig: CapacitorConfig = {
   appId: 'com.example.photo.gallery',
   appName: 'Galería de Fotos',
+  // Carpeta de salida generada por Angular (`ionic build`) sincronizada hacia Android/iOS.
   webDir: 'www',
   bundledWebRuntime: false,
   server: {

@@ -35,6 +35,7 @@ export class LoginPage implements ViewDidEnter {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
 
+  // Estado reactivo del envío y posibles fallos devueltos por la API de autenticación.
   readonly isSubmittingCredentials = signal<boolean>(false);
   readonly hasAttemptedSubmit = signal<boolean>(false);
   readonly authenticationErrorCode = signal<AuthenticationErrorCode | null>(null);
@@ -43,11 +44,15 @@ export class LoginPage implements ViewDidEnter {
   readonly isDemoModeEnabled = environment.useMockApi;
   readonly demoAccountCredentials = environment.demoAccountCredentials;
 
+  // Controles tipados como no nulos para validar correo y longitud mínima antes de enviar.
   readonly credentialsForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
   });
 
+  /**
+   * Registra los iconos empleados por la vista de inicio de sesión.
+   */
   constructor() {
     addIcons({
       camera,
@@ -57,10 +62,16 @@ export class LoginPage implements ViewDidEnter {
     });
   }
 
+  /**
+   * Anuncia la vista al lector de pantalla y ubica el foco inicial en el encabezado.
+   */
   ionViewDidEnter(): void {
     announcePageNavigation('Iniciar sesión — Galería de Fotos', 'login-title');
   }
 
+  /**
+   * Rellena el formulario con la cuenta de prueba para agilizar validaciones en entorno demo.
+   */
   populateDemoCredentials(): void {
     this.credentialsForm.setValue({
       email: this.demoAccountCredentials.email,
@@ -70,6 +81,9 @@ export class LoginPage implements ViewDidEnter {
     this.authenticationErrorMessage.set(null);
   }
 
+  /**
+   * Valida el formulario, autentica contra la API y redirige a la ruta interna sanitizada.
+   */
   async submitLoginForm(): Promise<void> {
     if (this.isSubmittingCredentials()) {
       return;
@@ -90,6 +104,7 @@ export class LoginPage implements ViewDidEnter {
         this.credentialsForm.getRawValue()
       );
 
+      // Evita redirecciones abiertas validando `returnUrl` antes de reemplazar el historial.
       const requestedReturnUrl = this.activatedRoute.snapshot.queryParamMap.get('returnUrl');
       const safeTargetUrl = sanitizePostLoginRedirectUrl(requestedReturnUrl);
       await this.router.navigateByUrl(safeTargetUrl, { replaceUrl: true });
@@ -106,6 +121,9 @@ export class LoginPage implements ViewDidEnter {
     }
   }
 
+  /**
+   * Devuelve el texto de error del campo solo tras interacción del usuario o intento de envío.
+   */
   getFieldValidationMessage(fieldName: 'email' | 'password'): string | undefined {
     const control = this.credentialsForm.controls[fieldName];
     if (control.valid || !(control.touched || this.hasAttemptedSubmit())) {
@@ -126,6 +144,9 @@ export class LoginPage implements ViewDidEnter {
     return 'Revisa el valor introducido.';
   }
 
+  /**
+   * Convierte el código interno de fallo de sesión en un mensaje claro para el usuario.
+   */
   private mapErrorCodeToUserMessage(errorCode: AuthenticationErrorCode): string {
     switch (errorCode) {
       case 'invalid_credentials':

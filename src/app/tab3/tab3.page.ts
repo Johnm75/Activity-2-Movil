@@ -23,10 +23,12 @@ import { announcePageNavigation } from '../utils/a11y-announce.util';
 export class Tab3Page implements ViewDidEnter {
   private readonly authenticationService = inject(JwtAuthenticationService);
 
+  // Datos reactivos de la sesión activa y vista previa truncada del token.
   readonly activeSession = this.authenticationService.activeSession;
   readonly maskedTokenPreview = this.authenticationService.maskedTokenPreview;
   readonly remainingSessionMinutes = this.authenticationService.remainingSessionMinutes;
 
+  // Botones del diálogo de confirmación previo al cierre de sesión.
   readonly signOutConfirmationButtons: AlertButton[] = [
     {
       text: 'Cancelar',
@@ -41,6 +43,9 @@ export class Tab3Page implements ViewDidEnter {
     },
   ];
 
+  /**
+   * Registra los iconos del perfil de usuario y diagnóstico de sesión.
+   */
   constructor() {
     addIcons({
       person,
@@ -50,10 +55,16 @@ export class Tab3Page implements ViewDidEnter {
     });
   }
 
+  /**
+   * Anuncia la pestaña de cuenta y mueve el foco al encabezado al entrar en la vista.
+   */
   ionViewDidEnter(): void {
     announcePageNavigation('Cuenta — Galería de Fotos', 'account-title');
   }
 
+  /**
+   * Cierra la sesión JWT activa manteniendo intactas las fotografías guardadas en el equipo.
+   */
   confirmSignOut(): void {
     void this.authenticationService.signOutSession();
   }

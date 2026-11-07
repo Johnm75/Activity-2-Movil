@@ -11,6 +11,9 @@ import { Router, type CanActivateFn } from '@angular/router';
 import { JwtAuthenticationService } from '../services/auth-jwt.service';
 import { sanitizePostLoginRedirectUrl } from '../utils/return-url.util';
 
+/**
+ * Impide reabrir `/login` con sesión vigente y envía al usuario hacia la ruta interna solicitada.
+ */
 export const unauthenticatedOnlyGuard: CanActivateFn = async (activatedRoute) => {
   const authenticationService = inject(JwtAuthenticationService);
   const router = inject(Router);
