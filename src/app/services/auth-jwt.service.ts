@@ -41,6 +41,9 @@ export class JwtAuthenticationService {
     return `${rawToken.slice(0, 10)}…${rawToken.slice(-4)}`;
   });
 
+  /**
+   * Calcula los minutos restantes de vigencia del token activo para consulta en la vista.
+   */
   readonly remainingSessionMinutes = computed(() => {
     const expiresAtMs = this.activeSession()?.expiresAtTimestampMs;
     if (!expiresAtMs) {
@@ -62,6 +65,9 @@ export class JwtAuthenticationService {
     return this.restorationPromise;
   }
 
+  /**
+   * Envía las credenciales a `POST /auth/login` y persiste en paralelo el JWT, su vigencia y el perfil.
+   */
   async authenticateWithCredentials(credentials: LoginCredentials): Promise<AuthenticatedSession> {
     const loginEndpointUrl = `${environment.apiBaseUrl}/auth/login`;
 
@@ -111,11 +117,17 @@ export class JwtAuthenticationService {
     return currentSession.accessToken;
   }
 
+  /**
+   * Indica si existe una sesión autenticada cuyo JWT continúe dentro de su ventana válida.
+   */
   async hasActiveSession(): Promise<boolean> {
     const validToken = await this.getValidAccessToken();
     return validToken !== null;
   }
 
+  /**
+   * Limpia las credenciales almacenadas en el dispositivo y redirige opcionalmente a `/login`.
+   */
   async signOutSession(options: { navigateToLogin?: boolean } = {}): Promise<void> {
     const shouldNavigateToLogin = options.navigateToLogin ?? true;
 
@@ -127,6 +139,9 @@ export class JwtAuthenticationService {
     }
   }
 
+  /**
+   * Reconstruye la sesión en memoria desde `Preferences` descartándola si ya expiró.
+   */
   private async hydrateSessionFromStorage(): Promise<void> {
     try {
       const [accessToken, expiresAtTimestampMs, userProfile] = await Promise.all([
@@ -159,6 +174,9 @@ export class JwtAuthenticationService {
     }
   }
 
+  /**
+   * Determina la expiración en milisegundos usando `expiresInSeconds`, el claim `exp` o el TTL por defecto.
+   */
   private calculateExpirationTimestamp(response: LoginApiResponse): number {
     if (response.expiresInSeconds && response.expiresInSeconds > 0) {
       return Date.now() + response.expiresInSeconds * 1000;
@@ -172,6 +190,9 @@ export class JwtAuthenticationService {
     return Date.now() + environment.jwtSession.defaultTimeToLiveSeconds * 1000;
   }
 
+  /**
+   * Decodifica el segmento Base64URL del payload JWT para leer el claim estándar `exp`.
+   */
   private extractJwtExpirationClaim(compactJwt: string): number | null {
     try {
       const payloadSegment = compactJwt.split('.')[1];
@@ -187,6 +208,9 @@ export class JwtAuthenticationService {
     }
   }
 
+  /**
+   * Traduce fallos HTTP crudos en códigos de dominio predecibles para la capa de vista.
+   */
   private translateHttpAuthError(error: unknown): AuthenticationErrorCode {
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401) {

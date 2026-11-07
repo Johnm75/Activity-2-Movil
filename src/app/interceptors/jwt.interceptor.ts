@@ -17,6 +17,9 @@ import { isAuthenticationLoginEndpoint, isTrustedApiEndpoint } from '../utils/ap
 
 let isSignOutInProgress = false;
 
+/**
+ * Adjunta el token Bearer solo hacia orígenes confiables y cierra sesión si el backend responde `401`.
+ */
 export const jwtAuthInterceptor: HttpInterceptorFn = (request, next) => {
   const authenticationService = inject(JwtAuthenticationService);
 
@@ -44,6 +47,9 @@ export const jwtAuthInterceptor: HttpInterceptorFn = (request, next) => {
   );
 };
 
+/**
+ * Clona la petición inmutable agregando la cabecera estándar `Authorization: Bearer`.
+ */
 function attachBearerTokenHeader(
   request: HttpRequest<unknown>,
   accessToken: string

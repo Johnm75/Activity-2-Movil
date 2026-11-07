@@ -45,14 +45,23 @@ export function sanitizeImageExtension(rawFormat: string): string {
   return PERMITTED_IMAGE_EXTENSIONS.has(normalizedExtension) ? normalizedExtension : 'jpeg';
 }
 
+/**
+ * Verifica que el `webPath` entregado por la cámara provenga de un esquema local confiable.
+ */
 export function isTrustedCameraWebPath(cameraWebPath: string): boolean {
   return isTrustedLocalWebviewUrl(cameraWebPath);
 }
 
+/**
+ * Valida que la URL convertida para `<img>` apunte solo al contenedor local del WebView.
+ */
 export function isSafeWebviewImageSource(imageSourceUrl: string): boolean {
   return isTrustedLocalWebviewUrl(imageSourceUrl);
 }
 
+/**
+ * Acepta únicamente esquemas locales usados por Capacitor, Ionic y PWA (`blob:`, `capacitor:`, `localhost`).
+ */
 function isTrustedLocalWebviewUrl(candidateUrl: string): boolean {
   if (typeof candidateUrl !== 'string' || candidateUrl.length === 0 || candidateUrl.length > 2048) {
     return false;

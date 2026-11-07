@@ -2,6 +2,7 @@
   Vista «Galería» (`Tab2Page`): cuadrícula persistente, captura de cámara y eliminación local.
   Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
 -->
+<!-- Encabezado principal con contador reactivo de capturas almacenadas. -->
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title id="gallery-title" tabindex="-1">Galería</ion-title>
@@ -20,12 +21,14 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- Cabecera colapsable para estilo nativo Cupertino en iOS. -->
   <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Galería</ion-title>
     </ion-toolbar>
   </ion-header>
 
+  <!-- Indicador mientras se verifica el índice y los archivos en `Directory.Data`. -->
   @if (isLoadingGallery()) {
     <div class="state-wrapper" role="status" aria-live="polite">
       <div class="state-card app-surface-card">
@@ -35,6 +38,7 @@
     </div>
   }
 
+  <!-- Tarjeta de recuperación si falla la lectura del almacenamiento o los permisos. -->
   @if (!isLoadingGallery() && galleryErrorMessage(); as errorMessage) {
     <div class="state-wrapper" role="alert">
       <div class="state-card error-card app-surface-card">
@@ -47,6 +51,7 @@
     </div>
   }
 
+  <!-- Estado vacío inicial con llamada directa a capturar la primera foto. -->
   @if (!isLoadingGallery() && !galleryErrorMessage() && isGalleryEmpty()) {
     <div class="state-wrapper" aria-live="polite">
       <div class="state-card app-surface-card">
@@ -69,6 +74,7 @@
     </div>
   }
 
+  <!-- Cuadrícula responsiva (3/4/6 columnas) con carga diferida de miniaturas locales. -->
   @if (!isLoadingGallery() && !isGalleryEmpty()) {
     <ion-grid class="photo-grid" [fixed]="true">
       <ion-row>
@@ -92,6 +98,7 @@
     </ion-grid>
   }
 
+  <!-- Botón flotante para disparar `@capacitor/camera` en cualquier momento. -->
   <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="camera-fab">
     <ion-fab-button
       color="primary"
@@ -102,6 +109,7 @@
     </ion-fab-button>
   </ion-fab>
 
+  <!-- Hoja inferior de acciones para confirmar el borrado físico de la foto elegida. -->
   <ion-action-sheet
     [isOpen]="isPhotoActionSheetOpen()"
     header="Gestionar fotografía local"
@@ -109,6 +117,7 @@
     (didDismiss)="closePhotoOptions()">
   </ion-action-sheet>
 
+  <!-- Confirmación breve no intrusiva tras guardar o eliminar una captura. -->
   <ion-toast
     [isOpen]="isFeedbackToastOpen()"
     [message]="feedbackToastMessage()"

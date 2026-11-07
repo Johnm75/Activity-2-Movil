@@ -5,9 +5,11 @@
  * @date 2026-11-06
  */
 
+// Curva y duración de micro-interacción táctil en botones principales.
 $ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
 $press-duration: 140ms;
 
+// Franja superior con gradiente de marca detrás de la tarjeta.
 .login-backdrop {
   position: absolute;
   inset: 0 0 auto;
@@ -17,6 +19,7 @@ $press-duration: 140ms;
   pointer-events: none;
 }
 
+// Centrado vertical completo (`100dvh`) respetando las safe-areas del dispositivo.
 .login-wrapper {
   position: relative;
   min-height: 100dvh;
@@ -27,6 +30,7 @@ $press-duration: 140ms;
     calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
+// Contenedor elevado del formulario acotado para lectura cómoda en tablets.
 .login-card {
   width: 100%;
   max-width: 420px;
@@ -36,6 +40,7 @@ $press-duration: 140ms;
   gap: 20px;
 }
 
+// Bloque de identidad con insignia de cámara y tipografía jerárquica.
 .login-header {
   display: flex;
   flex-direction: column;
@@ -76,6 +81,7 @@ $press-duration: 140ms;
   color: var(--ion-color-medium);
 }
 
+// Disposición vertical de entradas y alerta semántica de error.
 .login-form {
   display: flex;
   flex-direction: column;
@@ -113,6 +119,7 @@ $press-duration: 140ms;
   transition: transform $press-duration $ease-out-strong;
 }
 
+// Recuadro secundario de autocompletado para pruebas en modo mock.
 .demo-panel {
   padding: 12px;
   border-radius: 14px;
@@ -130,6 +137,7 @@ $press-duration: 140ms;
   color: var(--ion-color-medium);
 }
 
+// Respuesta de presión activa deshabilitada si el usuario prefiere reducir movimiento.
 @media (prefers-reduced-motion: no-preference) {
   .submit-button:active,
   .demo-button:active {

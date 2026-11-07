@@ -2,6 +2,7 @@
   Vista «Inicio» (`Tab1Page`): resumen de persistencia local y consumo API REST con Bearer JWT.
   Autor: John Fredy Marciales Morales | Fecha: 2026-11-06
 -->
+<!-- Barra superior con título enfocable al navegar entre pestañas. -->
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title id="tab1-title" tabindex="-1">Inicio</ion-title>
@@ -10,6 +11,7 @@
 
 <ion-content [fullscreen]="true">
   <div class="home-container">
+    <!-- Resumen del estado de sesión y cantidad actual de fotos en disco privado. -->
     <section class="hero-banner">
       <ion-chip class="hero-badge">
         <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
@@ -22,6 +24,7 @@
       </p>
     </section>
 
+    <!-- Accesos directos hacia la captura local y la inspección de cuenta. -->
     <section class="actions-card app-surface-card" aria-label="Acciones rápidas">
       <h3 class="section-title">Navegación rápida</h3>
 
@@ -45,6 +48,7 @@
       </ion-button>
     </section>
 
+    <!-- Tarjeta de consumo del endpoint protegido `GET /v1/photos` con cabecera Bearer. -->
     <section class="api-card app-surface-card" aria-label="Catálogo remoto API REST">
       <div class="api-header">
         <div>
@@ -65,6 +69,7 @@
         </ion-button>
       </div>
 
+      <!-- Estados mutuamente excluyentes: carga en curso, fallo HTTP o listado recibido. -->
       @if (isLoadingRemoteCatalog()) {
         <div class="api-state" role="status" aria-live="polite">
           <ion-spinner name="crescent" color="secondary" aria-hidden="true"></ion-spinner>

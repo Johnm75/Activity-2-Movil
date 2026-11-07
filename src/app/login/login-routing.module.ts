@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { LoginPage } from './login.page';
 
+// Ruta raíz del módulo perezoso asociado a `/login`.
 const loginRoutes: Routes = [
   {
     path: '',
@@ -17,6 +18,7 @@ const loginRoutes: Routes = [
   },
 ];
 
+// Registra las rutas hijas del módulo y reexporta `RouterModule` hacia la página.
 @NgModule({
   imports: [RouterModule.forChild(loginRoutes)],
   exports: [RouterModule],

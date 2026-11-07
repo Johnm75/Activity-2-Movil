@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { Tab1Page } from './tab1.page';
 
+// Vincula el segmento base del módulo cargado en diferido con `Tab1Page`.
 const tab1Routes: Routes = [
   {
     path: '',
@@ -17,6 +18,7 @@ const tab1Routes: Routes = [
   },
 ];
 
+// Expone la configuración de enrutamiento hijo para la pestaña de inicio.
 @NgModule({
   imports: [RouterModule.forChild(tab1Routes)],
   exports: [RouterModule],

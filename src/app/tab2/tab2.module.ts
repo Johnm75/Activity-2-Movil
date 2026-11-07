@@ -29,6 +29,7 @@ import {
 import { Tab2Page } from './tab2.page';
 import { Tab2PageRoutingModule } from './tab2-routing.module';
 
+// Registra los componentes de cuadrícula, FAB de captura y diálogos de confirmación local.
 @NgModule({
   imports: [
     CommonModule,

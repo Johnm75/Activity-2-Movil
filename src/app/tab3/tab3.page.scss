@@ -5,9 +5,11 @@
  * @date 2026-11-06
  */
 
+// Parámetros de transición para la respuesta táctil del botón de salida.
 $ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
 $press-duration: 140ms;
 
+// Contenedor principal acotado y protegido frente al borde inferior del dispositivo.
 .account-wrapper {
   max-width: 480px;
   margin: 0 auto;
@@ -17,6 +19,7 @@ $press-duration: 140ms;
   gap: 16px;
 }
 
+// Tarjeta superior con avatar circular, correo e insignia de rol.
 .profile-card {
   padding: 26px 20px 22px;
   display: flex;
@@ -60,6 +63,7 @@ $press-duration: 140ms;
   font-weight: 600;
 }
 
+// Lista de metadatos de sesión con fuente monoespaciada para el extracto del token.
 .session-list {
   margin: 0;
   overflow: hidden;
@@ -70,6 +74,7 @@ $press-duration: 140ms;
   font-size: 0.82rem;
 }
 
+// Acción destructiva de cierre de sesión y estado alternativo sin sesión activa.
 .logout-area {
   padding-top: 4px;
 }

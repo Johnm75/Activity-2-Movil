@@ -14,6 +14,7 @@ import { appConfig } from './app/app.config';
 // Habilita el modal web de cámara cuando `Camera.getPhoto` se ejecuta en navegador de escritorio.
 defineCustomElements(window);
 
+// Inicia el árbol raíz inyectando los proveedores globales de rutas, Ionic e interceptores HTTP.
 bootstrapApplication(AppComponent, appConfig).catch(bootstrapError =>
   console.error(bootstrapError)
 );

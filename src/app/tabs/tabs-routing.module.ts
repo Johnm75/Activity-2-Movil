@@ -10,6 +10,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { TabsPage } from './tabs.page';
 
+// Carga cada pestaña bajo demanda y establece `tab2` (Galería) como vista inicial dentro de `/tabs`.
 const tabRoutes: Routes = [
   {
     path: '',
@@ -36,6 +37,7 @@ const tabRoutes: Routes = [
   },
 ];
 
+// Registra el árbol hijo del contenedor de pestañas en el enrutador de Angular.
 @NgModule({
   imports: [RouterModule.forChild(tabRoutes)],
   exports: [RouterModule],

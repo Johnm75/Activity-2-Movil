@@ -89,6 +89,10 @@ export class PhotoService {
     }
   }
 
+  /**
+   * Invoca el plugin de cámara con la fuente indicada y distingue una cancelación
+   * voluntaria del usuario frente a un bloqueo real de permisos.
+   */
   async requestPhotoFromDevice(
     captureSource: CameraSource = CameraSource.Prompt
   ): Promise<Photo | null> {
@@ -126,6 +130,9 @@ export class PhotoService {
     return this.convertImageBlobToBase64(imageBlob);
   }
 
+  /**
+   * Lee un `Blob` mediante `FileReader` y devuelve solo la carga Base64 sin prefijo `data:`.
+   */
   convertImageBlobToBase64(imageBlob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
@@ -145,6 +152,10 @@ export class PhotoService {
     });
   }
 
+  /**
+   * Escribe el binario Base64 dentro de `Directory.Data/photos` con nombre único
+   * y construye el modelo listo para mostrarse en el WebView.
+   */
   async writePhotoToPrivateStorage(
     base64Content: string,
     rawFormat: string,
@@ -230,6 +241,9 @@ export class PhotoService {
     }
   }
 
+  /**
+   * Borra el archivo físico en `Directory.Data` y actualiza el índice persistido en `Preferences`.
+   */
   async deleteSavedPhoto(photoId: string): Promise<void> {
     const currentPhotos = this.savedPhotos();
     const photoToDelete = currentPhotos.find(photo => photo.id === photoId);
@@ -278,12 +292,18 @@ export class PhotoService {
     }
   }
 
+  /**
+   * Inserta la nueva captura al inicio de la galería y sincroniza el índice local.
+   */
   private async prependSavedPhoto(newPhoto: SavedPhoto): Promise<void> {
     const updatedPhotos = [newPhoto, ...this.savedPhotos()];
     await this.saveGalleryIndexToPreferences(updatedPhotos);
     this.savedPhotos.set(updatedPhotos);
   }
 
+  /**
+   * Lee el índice JSON de `Preferences`; si está dañado guarda copia en `.corrupt` y reinicia vacío.
+   */
   private async readPersistedGalleryIndex(): Promise<PersistedGalleryIndex> {
     const { value } = await Preferences.get({ key: this.galleryIndexKey });
     if (!value) {
@@ -303,6 +323,9 @@ export class PhotoService {
     }
   }
 
+  /**
+   * Serializa los metadatos en `Preferences` descartando `webviewDisplayUrl` por ser efímera.
+   */
   private async saveGalleryIndexToPreferences(photos: SavedPhoto[]): Promise<void> {
     const persistedItems: PersistedPhotoMetadata[] = photos.map(
       ({ webviewDisplayUrl: _ignoredUrl, ...metadata }) => metadata
@@ -320,6 +343,9 @@ export class PhotoService {
     });
   }
 
+  /**
+   * Genera la estructura base de un índice vacío con la versión actual del esquema.
+   */
   private createEmptyGalleryIndex(): PersistedGalleryIndex {
     return {
       schemaVersion: 1,
@@ -328,6 +354,9 @@ export class PhotoService {
     };
   }
 
+  /**
+   * Deduce la extensión del archivo a partir de `format` o de la ruta devuelta por la cámara.
+   */
   private resolvePhotoExtension(capturedPhoto: Photo): string {
     if (capturedPhoto.format) {
       return capturedPhoto.format.toLowerCase();
@@ -338,6 +367,9 @@ export class PhotoService {
     return extensionMatch ? extensionMatch[1].toLowerCase() : 'jpeg';
   }
 
+  /**
+   * Crea un identificador único usando `crypto.randomUUID` con respaldo hexadecimal seguro.
+   */
   private generateUniqueIdentifier(): string {
     if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
       return crypto.randomUUID();
@@ -357,6 +389,9 @@ export class PhotoService {
       .join('');
   }
 
+  /**
+   * Detecta si el rechazo del plugin corresponde al cierre voluntario del selector de cámara.
+   */
   private isCameraCancelledByUser(error: unknown): boolean {
     if (error instanceof Error) {
       const normalizedMessage = error.message.toLowerCase();

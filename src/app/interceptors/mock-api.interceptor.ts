@@ -19,6 +19,9 @@ import type { RemoteCatalogPhoto } from '../models/photo.model';
 import { environment } from '../../environments/environment';
 import { isTrustedApiEndpoint } from '../utils/api-url.util';
 
+/**
+ * Intercepta llamadas dirigidas a `apiBaseUrl` en modo demo y delega el resto al backend real.
+ */
 export const mockRestApiInterceptor: HttpInterceptorFn = (request, next) => {
   if (!environment.useMockApi || !isTrustedApiEndpoint(request.url, environment.apiBaseUrl)) {
     return next(request);
@@ -37,6 +40,9 @@ export const mockRestApiInterceptor: HttpInterceptorFn = (request, next) => {
   return next(request);
 };
 
+/**
+ * Valida las credenciales de prueba y emite un JWT firmado de demostración con vigencia real.
+ */
 function simulateLoginEndpoint(request: HttpRequest<unknown>) {
   const submittedCredentials = request.body as LoginCredentials;
   const expectedCredentials = environment.demoAccountCredentials;
@@ -58,6 +64,7 @@ function simulateLoginEndpoint(request: HttpRequest<unknown>) {
     role: 'student',
   };
 
+  // Arma un token con estructura RFC 7519 (`header.payload.signature`) legible por `atob`.
   const encodedHeader = encodeJsonAsBase64Url({ alg: 'HS256', typ: 'JWT' });
   const encodedPayload = encodeJsonAsBase64Url({
     sub: authenticatedUser.id,
@@ -78,6 +85,9 @@ function simulateLoginEndpoint(request: HttpRequest<unknown>) {
   );
 }
 
+/**
+ * Exige `Authorization: Bearer <token>` antes de devolver el catálogo remoto simulado.
+ */
 function simulateProtectedPhotosCatalogEndpoint(request: HttpRequest<unknown>) {
   const authorizationHeader = request.headers.get('Authorization');
   const hasBearerToken = Boolean(authorizationHeader?.startsWith('Bearer '));
@@ -118,6 +128,9 @@ function simulateProtectedPhotosCatalogEndpoint(request: HttpRequest<unknown>) {
   );
 }
 
+/**
+ * Construye una miniatura SVG en Data URI para no depender de conectividad externa durante pruebas.
+ */
 function buildSvgThumbnailDataUrl(
   startColorHex: string,
   endColorHex: string,
@@ -127,6 +140,9 @@ function buildSvgThumbnailDataUrl(
   return `data:image/svg+xml;utf8,${encodeURIComponent(svgMarkup)}`;
 }
 
+/**
+ * Empaqueta un error HTTP simulado dentro de un flujo observable fallido.
+ */
 function buildErrorResponse(httpStatus: number, responseBody: unknown) {
   const errorResponse = new HttpErrorResponse({
     error: responseBody,
@@ -136,6 +152,9 @@ function buildErrorResponse(httpStatus: number, responseBody: unknown) {
   return throwError(() => errorResponse);
 }
 
+/**
+ * Obtiene la ruta relativa del recurso descontando el prefijo configurado en `apiBaseUrl`.
+ */
 function extractRelativeEndpointPath(requestUrl: string, apiBaseUrl: string): string {
   const basePath = new URL(apiBaseUrl).pathname.replace(/\/+$/, '');
   const fullPath = new URL(requestUrl).pathname;
@@ -143,6 +162,9 @@ function extractRelativeEndpointPath(requestUrl: string, apiBaseUrl: string): st
   return relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
 }
 
+/**
+ * Codifica un objeto JSON en Base64URL sin relleno `=` siguiendo el estándar JWT.
+ */
 function encodeJsonAsBase64Url(payload: Record<string, unknown>): string {
   return btoa(JSON.stringify(payload))
     .replace(/\+/g, '-')

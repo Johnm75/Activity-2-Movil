@@ -5,6 +5,7 @@
  * @date 2026-11-06
  */
 
+/* Paleta base en modo claro con contraste AA verificado sobre fondos y botones. */
 :root {
   --ion-color-primary: #4f46e5;
   --ion-color-primary-rgb: 79, 70, 229;
@@ -42,6 +43,7 @@
   --ion-item-background: #ffffff;
   --ion-card-background: #ffffff;
 
+  /* Tokens propios de superficies, bordes y gradientes compartidos por toda la app. */
   --app-surface-bg: #ffffff;
   --app-surface-muted: #f8fafc;
   --app-surface-border: #cbd5e1;
@@ -50,6 +52,7 @@
   --app-btn-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
 }
 
+/* Redefinición automática para modo oscuro según la preferencia del dispositivo. */
 @media (prefers-color-scheme: dark) {
   :root {
     --ion-color-primary: #6366f1;
